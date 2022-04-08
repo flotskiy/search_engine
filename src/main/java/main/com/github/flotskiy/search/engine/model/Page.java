@@ -3,13 +3,14 @@ package main.com.github.flotskiy.search.engine.model;
 import javax.persistence.*;
 
 @Entity
+@Table(indexes = @Index(name = "path_index", columnList = "path"))
 public class Page {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(nullable = false)
     private String path;
 
     @Column(nullable = false)
