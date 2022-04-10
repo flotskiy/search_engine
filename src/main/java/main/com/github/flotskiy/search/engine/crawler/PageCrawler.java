@@ -1,7 +1,7 @@
 package main.com.github.flotskiy.search.engine.crawler;
 
 import main.com.github.flotskiy.search.engine.model.Page;
-import org.hibernate.Session;
+import main.com.github.flotskiy.search.engine.model.PageRepository;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -19,12 +19,12 @@ public class PageCrawler extends RecursiveAction {
 
     private final Set<String> webpages;
     private final String pagePath;
-    private final Session session;
+    private final PageRepository pageRepository;
 
-    public PageCrawler(Set<String> webpages, String pagePath, Session session) {
+    public PageCrawler(Set<String> webpages, String pagePath, PageRepository pageRepository) {
         this.webpages = webpages;
         this.pagePath = pagePath;
-        this.session = session;
+        this.pageRepository = pageRepository;
     }
 
     @Override
@@ -55,7 +55,7 @@ public class PageCrawler extends RecursiveAction {
                     String href = anchor.absUrl("href");
                     if (href.startsWith(pagePath) && isHrefToPage(href) && !isPageAdded(href)) {
                         System.out.println("Added to set: " + href);
-                        PageCrawler pageCrawler = new PageCrawler(webpages, href, session);
+                        PageCrawler pageCrawler = new PageCrawler(webpages, href, pageRepository);
                         pagesList.add(pageCrawler);
                         pageCrawler.fork();
                     }
@@ -68,9 +68,7 @@ public class PageCrawler extends RecursiveAction {
             pathToSave += pathToSave.endsWith("/") ? "" : "/";
 
             Page page = new Page(pathToSave, httpStatusCode, html);
-            synchronized (session) {
-                session.save(page);
-            }
+            pageRepository.save(page);
 
         } catch (InterruptedException | IOException e) {
             e.printStackTrace();
