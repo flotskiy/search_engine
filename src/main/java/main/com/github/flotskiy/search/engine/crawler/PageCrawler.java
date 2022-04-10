@@ -42,6 +42,9 @@ public class PageCrawler extends RecursiveAction {
                     .ignoreHttpErrors(true);
 //                    .ignoreContentType(true);
 
+            URL url = new URL(pagePath);
+            String homePage = url.getProtocol() + "://" + url.getHost();
+
             Connection.Response response = connection.execute();
             int httpStatusCode = response.statusCode();
             String html = "";
@@ -53,7 +56,7 @@ public class PageCrawler extends RecursiveAction {
                 Elements anchors = document.select("body").select("a");
                 for (Element anchor : anchors) {
                     String href = anchor.absUrl("href");
-                    if (href.startsWith(pagePath) && isHrefToPage(href) && !isPageAdded(href)) {
+                    if (href.startsWith(homePage) && isHrefToPage(href) && !isPageAdded(href)) {
                         System.out.println("Added to set: " + href);
                         PageCrawler pageCrawler = new PageCrawler(webpages, href, pageRepository);
                         pagesList.add(pageCrawler);
@@ -62,11 +65,7 @@ public class PageCrawler extends RecursiveAction {
                 }
             }
 
-            URL url = new URL(pagePath);
-            String homePage = url.getProtocol() + "://" + url.getHost();
             String pathToSave = pagePath.substring(homePage.length());
-            pathToSave += pathToSave.endsWith("/") ? "" : "/";
-
             Page page = new Page(pathToSave, httpStatusCode, html);
             pageRepository.save(page);
 
@@ -95,7 +94,8 @@ public class PageCrawler extends RecursiveAction {
             return false;
         }
         return !href.matches(
-                ".*\\.(pdf|docx?|xlsx?|pptx?|jpe?g|gif|png|mp3|aac|json|csv|exe|apk|rar|zip|xml|jar|bin|svg)/?"
+                ".*\\.(pdf|docx?|xlsx?|pptx?|jpe?g|JPE?G|gif|png" +
+                        "|mp3|mp4|aac|json|csv|exe|apk|rar|zip|xml|jar|bin|svg)/?"
         );
     }
 }
