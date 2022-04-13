@@ -40,7 +40,6 @@ public class PageCrawler extends RecursiveAction {
 //                    .userAgent("FlotskiySearchBot")
                     .referrer("http://www.google.com")
                     .ignoreHttpErrors(true);
-//                    .ignoreContentType(true);
 
             URL url = new URL(pagePath);
             String homePage = url.getProtocol() + "://" + url.getHost();
@@ -56,7 +55,13 @@ public class PageCrawler extends RecursiveAction {
                 Elements anchors = document.select("body").select("a");
                 for (Element anchor : anchors) {
                     String href = anchor.absUrl("href");
-                    if (href.startsWith(homePage) && isHrefToPage(href) && !isPageAdded(href)) {
+                    if (
+                            href.startsWith(homePage) &&
+                            isHrefToPage(href) &&
+                            !isPageAdded(href) &&
+                            !href.equals(homePage) &&
+                            !href.equals(homePage + "/")
+                    ) {
                         System.out.println("Added to set: " + href);
                         PageCrawler pageCrawler = new PageCrawler(webpages, href, pageRepository);
                         pagesList.add(pageCrawler);
@@ -79,6 +84,7 @@ public class PageCrawler extends RecursiveAction {
     }
 
     private boolean isPageAdded(String pagePath) {
+        pagePath += pagePath.endsWith("/") ? "" : "/";
         synchronized (webpages) {
             if (!webpages.contains(pagePath)) {
                 webpages.add(pagePath);
@@ -94,8 +100,9 @@ public class PageCrawler extends RecursiveAction {
             return false;
         }
         return !href.matches(
-                ".*\\.(pdf|docx?|xlsx?|pptx?|jpe?g|JPE?G|gif|png" +
-                        "|mp3|mp4|aac|json|csv|exe|apk|rar|zip|xml|jar|bin|svg)/?"
+                ".*\\.(pdf|PDF|docx?|DOCX?|xlsx?|XLSX?|pptx?|PPTX?|jpe?g|JPE?G|gif|GIF|png|PNG" +
+                        "|mp3|MP3|mp4|MP4|aac|AAC|json|JSON|csv|CSV|exe|EXE|apk|APK|rar|RAR|zip|ZIP" +
+                        "|xml|XML|jar|JAR|bin|BIN|svg|SVG|nc|NC|webp|WEBP)/?"
         );
     }
 }
