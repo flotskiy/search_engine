@@ -1,6 +1,6 @@
 package main.com.github.flotskiy.search.engine.crawler;
 
-import main.com.github.flotskiy.search.engine.model.PageRepository;
+import main.com.github.flotskiy.search.engine.repositories.PageRepository;
 
 import java.io.BufferedReader;
 import java.io.IOException;

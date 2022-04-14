@@ -1,7 +1,7 @@
 package main.com.github.flotskiy.search.engine.controllers;
 
 import main.com.github.flotskiy.search.engine.crawler.PageCrawlerTest;
-import main.com.github.flotskiy.search.engine.model.PageRepository;
+import main.com.github.flotskiy.search.engine.repositories.PageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

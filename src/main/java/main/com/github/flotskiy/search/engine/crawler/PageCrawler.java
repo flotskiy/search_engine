@@ -1,7 +1,7 @@
 package main.com.github.flotskiy.search.engine.crawler;
 
 import main.com.github.flotskiy.search.engine.model.Page;
-import main.com.github.flotskiy.search.engine.model.PageRepository;
+import main.com.github.flotskiy.search.engine.repositories.PageRepository;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

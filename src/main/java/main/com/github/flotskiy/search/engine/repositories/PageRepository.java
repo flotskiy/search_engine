@@ -1,5 +1,6 @@
-package main.com.github.flotskiy.search.engine.model;
+package main.com.github.flotskiy.search.engine.repositories;
 
+import main.com.github.flotskiy.search.engine.model.Page;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
