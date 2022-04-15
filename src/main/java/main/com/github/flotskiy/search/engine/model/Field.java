@@ -25,4 +25,10 @@ public class Field {
 
     @Column(nullable = false)
     private float weight;
+
+    public Field(String name, String selector, float weight) {
+        this.name = name;
+        this.selector = selector;
+        this.weight = weight;
+    }
 }

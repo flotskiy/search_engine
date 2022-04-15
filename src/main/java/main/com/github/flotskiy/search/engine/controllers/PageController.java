@@ -1,7 +1,9 @@
 package main.com.github.flotskiy.search.engine.controllers;
 
 import main.com.github.flotskiy.search.engine.crawler.PageCrawlerTest;
+import main.com.github.flotskiy.search.engine.repositories.FieldRepository;
 import main.com.github.flotskiy.search.engine.repositories.PageRepository;
+import main.com.github.flotskiy.search.engine.util.FieldInitializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,10 +16,14 @@ public class PageController {
     @Autowired
     private PageRepository pageRepository;
 
+    @Autowired
+    private FieldRepository fieldRepository;
+
     @GetMapping("/")
     public void start() throws IOException {
         long start = System.currentTimeMillis();
         System.out.println("Processing started");
+        new FieldInitializer(fieldRepository).init();
         PageCrawlerTest.testCrawler(pageRepository);
         System.out.println("Processing completed!");
         System.out.println("Время работы: " + (System.currentTimeMillis() - start) / 1000 + " секунд");
