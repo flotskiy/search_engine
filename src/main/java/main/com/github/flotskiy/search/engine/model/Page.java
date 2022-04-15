@@ -5,17 +5,17 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.persistence.Index;
+import java.util.Collection;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "Pages", indexes = @Index(name = "path_index", columnList = "path"))
+@Table(name = "Pages", indexes = @javax.persistence.Index(name = "path_index", columnList = "path"))
 public class Page {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @Column(nullable = false)
@@ -26,6 +26,9 @@ public class Page {
 
     @Column(columnDefinition = "MEDIUMTEXT", nullable = false)
     private String content;
+
+    @OneToMany(mappedBy = "pageId")
+    private Collection<Index> indexes;
 
     public Page(String path, int code, String content) {
         this.path = path;

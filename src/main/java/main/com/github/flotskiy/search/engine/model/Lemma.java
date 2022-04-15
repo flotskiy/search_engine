@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.Collection;
 
 @Getter
 @Setter
@@ -14,7 +15,7 @@ import javax.persistence.*;
 public class Lemma {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @Column(nullable = false)
@@ -22,4 +23,7 @@ public class Lemma {
 
     @Column(nullable = false)
     private int frequency;
+
+    @OneToMany(mappedBy = "lemmaId")
+    private Collection<Index> indexes;
 }
