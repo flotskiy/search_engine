@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.Collection;
+import java.util.List;
 
 @Getter
 @Setter
@@ -27,8 +27,8 @@ public class Page {
     @Column(columnDefinition = "MEDIUMTEXT", nullable = false)
     private String content;
 
-    @OneToMany(mappedBy = "pageId")
-    private Collection<Index> indexes;
+    @OneToMany(mappedBy = "pageId", cascade = CascadeType.ALL)
+    private List<Index> indexes;
 
     public Page(String path, int code, String content) {
         this.path = path;

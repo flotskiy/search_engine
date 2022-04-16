@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.Collection;
+import java.util.List;
 
 @Getter
 @Setter
@@ -24,6 +24,6 @@ public class Lemma {
     @Column(nullable = false)
     private int frequency;
 
-    @OneToMany(mappedBy = "lemmaId")
-    private Collection<Index> indexes;
+    @OneToMany(mappedBy = "lemmaId", cascade = CascadeType.ALL)
+    private List<Index> indexes;
 }

@@ -10,6 +10,7 @@ import javax.persistence.*;
 @Setter
 @NoArgsConstructor
 @Entity
+@Table(name = "search_index")
 public class Index {
 
     @Id
@@ -24,6 +25,6 @@ public class Index {
     @JoinColumn(name = "lemma_id", referencedColumnName = "id", nullable = false)
     private Lemma lemmaId;
 
-    @Column(nullable = false)
-    private float rank;
+    @Column(name = "lemma_rank", nullable = false)
+    private float lemmaRank;
 }
