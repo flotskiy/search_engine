@@ -27,4 +27,10 @@ public class Index {
 
     @Column(name = "lemma_rank", nullable = false)
     private float lemmaRank;
+
+    public Index(Page pageId, Lemma lemmaId, float lemmaRank) {
+        this.pageId = pageId;
+        this.lemmaId = lemmaId;
+        this.lemmaRank = lemmaRank;
+    }
 }

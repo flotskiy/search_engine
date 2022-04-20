@@ -32,6 +32,7 @@ public class Lemmatizer {
 
     private static List<String> getWordsWithoutServicePartsOfSpeech(String text) {
          return Arrays.stream((text).split("[^а-яёА-ЯЁ]+"))
+                 .filter(word -> word.length() != 0)
                  .map(String::toLowerCase)
                  .filter(word -> luceneMorphology
                          .getMorphInfo(word)

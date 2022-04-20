@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "Lemmas")
+@Table(name = "Lemmas", indexes = @javax.persistence.Index(name = "lemma_index", columnList = "lemma"))
 public class Lemma {
 
     @Id
@@ -26,4 +26,9 @@ public class Lemma {
 
     @OneToMany(mappedBy = "lemmaId", cascade = CascadeType.ALL)
     private List<Index> indexes;
+
+    public Lemma(String lemma, int frequency) {
+        this.lemma = lemma;
+        this.frequency = frequency;
+    }
 }

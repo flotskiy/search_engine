@@ -15,7 +15,7 @@ public class LemmatizerMainTest {
                 "не могут употребляться самостоятельно, они всегда относятся к какому-нибудь существительному " +
                 "(или слову, употребляемому в функции существительного).";
 
-        Map<String, Integer> testMap = Lemmatizer.getLemmasCountMap(inputText);
+        Map<String, Integer> testMap = Lemmatizer.getLemmasCountMap("800 добрых дел | Нижний 800");
         testMap.entrySet().forEach(System.out::println);
     }
 }
