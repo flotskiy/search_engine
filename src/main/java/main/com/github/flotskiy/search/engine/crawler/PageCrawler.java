@@ -1,7 +1,10 @@
 package main.com.github.flotskiy.search.engine.crawler;
 
+import main.com.github.flotskiy.search.engine.lemmatizer.Lemmatizer;
 import main.com.github.flotskiy.search.engine.model.Page;
-import main.com.github.flotskiy.search.engine.repositories.PageRepository;
+import main.com.github.flotskiy.search.engine.dataholders.CollectionsHolder;
+import main.com.github.flotskiy.search.engine.dataholders.RepositoriesHolder;
+import main.com.github.flotskiy.search.engine.util.TempIndex;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -12,19 +15,21 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.RecursiveAction;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PageCrawler extends RecursiveAction {
 
-    private final Set<String> webpages;
+    private final CollectionsHolder collHolder;
     private final String pagePath;
-    private final PageRepository pageRepository;
+    private final RepositoriesHolder repoHolder;
 
-    public PageCrawler(Set<String> webpages, String pagePath, PageRepository pageRepository) {
-        this.webpages = webpages;
+    public PageCrawler(CollectionsHolder collHolder, String pagePath, RepositoriesHolder repoHolder) {
+        this.collHolder = collHolder;
         this.pagePath = pagePath;
-        this.pageRepository = pageRepository;
+        this.repoHolder = repoHolder;
     }
 
     @Override
@@ -63,7 +68,7 @@ public class PageCrawler extends RecursiveAction {
                             !href.equals(homePage + "/")
                     ) {
                         System.out.println("Added to set: " + href);
-                        PageCrawler pageCrawler = new PageCrawler(webpages, href, pageRepository);
+                        PageCrawler pageCrawler = new PageCrawler(collHolder, href, repoHolder);
                         pagesList.add(pageCrawler);
                         pageCrawler.fork();
                     }
@@ -72,7 +77,45 @@ public class PageCrawler extends RecursiveAction {
 
             String pathToSave = pagePath.substring(homePage.length());
             Page page = new Page(pathToSave, httpStatusCode, html);
-            pageRepository.save(page);
+            repoHolder.getPageRepository().save(page);
+
+            if (httpStatusCode == 200) {
+                Document htmlDocument = Jsoup.parse(html);
+
+                String title = htmlDocument.title();
+                System.out.println(title);
+                Map<String, Integer> titleLemmasCount = Lemmatizer.getLemmasCountMap(title);
+                System.out.println(titleLemmasCount);
+
+                String bodyText = htmlDocument.body().text();
+                System.out.println("Body text: " + bodyText);
+                Map<String, Integer> bodyLemmasCount = Lemmatizer.getLemmasCountMap(bodyText);
+                System.out.println(bodyLemmasCount);
+
+                Map<String, Integer> uniqueLemmasInTitleAndBody = Stream
+                        .concat(titleLemmasCount.entrySet().stream(), bodyLemmasCount.entrySet().stream())
+                        .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.summingInt(Map.Entry::getValue)));
+
+                System.out.println("Все леммы: " + uniqueLemmasInTitleAndBody);
+
+                float lemmaRank;
+
+                for (String lemma : uniqueLemmasInTitleAndBody.keySet()) {
+                    synchronized (collHolder.getLemmasMap()) {
+                        collHolder.getLemmasMap()
+                                .put(lemma, collHolder.getLemmasMap().getOrDefault(lemma, 0) + 1);
+                    }
+                    synchronized (collHolder.getSelectorsAndWeight()) {
+                        lemmaRank = titleLemmasCount.getOrDefault(lemma, 0) *
+                                    collHolder.getSelectorsAndWeight().get("title") +
+                                    bodyLemmasCount.getOrDefault(lemma, 0) *
+                                    collHolder.getSelectorsAndWeight().get("body");
+                    }
+                    synchronized (collHolder.getTempIndexList()) {
+                        collHolder.getTempIndexList().add(new TempIndex(page, lemma, lemmaRank));
+                    }
+                }
+            }
 
         } catch (InterruptedException | IOException e) {
             e.printStackTrace();
@@ -85,9 +128,9 @@ public class PageCrawler extends RecursiveAction {
 
     private boolean isPageAdded(String pagePath) {
         pagePath += pagePath.endsWith("/") ? "" : "/";
-        synchronized (webpages) {
-            if (!webpages.contains(pagePath)) {
-                webpages.add(pagePath);
+        synchronized (collHolder.getWebpagesPath()) {
+            if (!collHolder.getWebpagesPath().contains(pagePath)) {
+                collHolder.getWebpagesPath().add(pagePath);
                 return false;
             }
         }
