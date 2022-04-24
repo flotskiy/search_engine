@@ -77,7 +77,7 @@ public class PageCrawler extends RecursiveAction {
 
             String pathToSave = pagePath.substring(homePage.length());
             Page page = new Page(pathToSave, httpStatusCode, html);
-            repoHolder.getPageRepository().save(page);
+            collHolder.getPagesList().add(page);
 
             if (httpStatusCode == 200) {
                 Document htmlDocument = Jsoup.parse(html);
@@ -85,12 +85,9 @@ public class PageCrawler extends RecursiveAction {
                 String title = htmlDocument.title();
                 System.out.println(title);
                 Map<String, Integer> titleLemmasCount = Lemmatizer.getLemmasCountMap(title);
-                System.out.println(titleLemmasCount);
 
                 String bodyText = htmlDocument.body().text();
-                System.out.println("Body text: " + bodyText);
                 Map<String, Integer> bodyLemmasCount = Lemmatizer.getLemmasCountMap(bodyText);
-                System.out.println(bodyLemmasCount);
 
                 Map<String, Integer> uniqueLemmasInTitleAndBody = Stream
                         .concat(titleLemmasCount.entrySet().stream(), bodyLemmasCount.entrySet().stream())
@@ -101,19 +98,13 @@ public class PageCrawler extends RecursiveAction {
                 float lemmaRank;
 
                 for (String lemma : uniqueLemmasInTitleAndBody.keySet()) {
-                    synchronized (collHolder.getLemmasMap()) {
-                        collHolder.getLemmasMap()
-                                .put(lemma, collHolder.getLemmasMap().getOrDefault(lemma, 0) + 1);
-                    }
-                    synchronized (collHolder.getSelectorsAndWeight()) {
-                        lemmaRank = titleLemmasCount.getOrDefault(lemma, 0) *
-                                    collHolder.getSelectorsAndWeight().get("title") +
-                                    bodyLemmasCount.getOrDefault(lemma, 0) *
-                                    collHolder.getSelectorsAndWeight().get("body");
-                    }
-                    synchronized (collHolder.getTempIndexList()) {
-                        collHolder.getTempIndexList().add(new TempIndex(page, lemma, lemmaRank));
-                    }
+                    collHolder.getLemmasMap()
+                            .put(lemma, collHolder.getLemmasMap().getOrDefault(lemma, 0) + 1);
+                    lemmaRank = titleLemmasCount.getOrDefault(lemma, 0) *
+                                collHolder.getSelectorsAndWeight().get("title") +
+                                bodyLemmasCount.getOrDefault(lemma, 0) *
+                                collHolder.getSelectorsAndWeight().get("body");
+                    collHolder.getTempIndexesList().add(new TempIndex(page, lemma, lemmaRank));
                 }
             }
 
@@ -128,11 +119,9 @@ public class PageCrawler extends RecursiveAction {
 
     private boolean isPageAdded(String pagePath) {
         pagePath += pagePath.endsWith("/") ? "" : "/";
-        synchronized (collHolder.getWebpagesPath()) {
-            if (!collHolder.getWebpagesPath().contains(pagePath)) {
-                collHolder.getWebpagesPath().add(pagePath);
-                return false;
-            }
+        if (!collHolder.getWebpagesPath().contains(pagePath)) {
+            collHolder.getWebpagesPath().add(pagePath);
+            return false;
         }
         System.out.println("\tPage was added before: " + pagePath);
         return true;

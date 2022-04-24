@@ -33,10 +33,8 @@ public class PageController {
         RepositoriesHolder repositoriesHolder =
                 new RepositoriesHolder(pageRepository, fieldRepository, lemmaRepository, indexRepository);
         long start = System.currentTimeMillis();
-        System.out.println("Processing started");
         new FieldInitializer(repositoriesHolder.getFieldRepository()).init();
         PageCrawlerTest.testCrawler(repositoriesHolder);
-        System.out.println("Processing completed!");
         System.out.println("Время работы: " + (System.currentTimeMillis() - start) / 1000 + " секунд");
     }
 }

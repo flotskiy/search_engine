@@ -10,8 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 
 public class PageCrawlerTest {
@@ -25,6 +24,7 @@ public class PageCrawlerTest {
         String homePage = url.getProtocol() + "://" + url.getHost() + "/";
         ForkJoinPool forkJoinPool = new ForkJoinPool();
         forkJoinPool.invoke(new PageCrawler(COLLECTIONS_HOLDER, homePage, repositoriesHolder));
+        repositoriesHolder.getPageRepository().saveAll(COLLECTIONS_HOLDER.getPagesList());
 
         System.out.println("Размер lemmasMap - " + COLLECTIONS_HOLDER.getLemmasMap().size());
         for (String key : COLLECTIONS_HOLDER.getLemmasMap().keySet()) {
@@ -32,15 +32,19 @@ public class PageCrawlerTest {
             COLLECTIONS_HOLDER.getLemmasList().add(lemma);
         }
         repositoriesHolder.getLemmaRepository().saveAll(COLLECTIONS_HOLDER.getLemmasList());
+        Iterable<Lemma> lemmaIterable = repositoriesHolder.getLemmaRepository().findAll();
+        Map<String, Lemma> lemmasMapFromDB = new HashMap<>();
+        for (Lemma lemma : lemmaIterable) {
+            lemmasMapFromDB.put(lemma.getLemma(), lemma);
+        }
 
         List<Index> indexList = new ArrayList<>();
-        for (TempIndex tempIndex : COLLECTIONS_HOLDER.getTempIndexList()) {
-            int lemmaId = repositoriesHolder.getLemmaRepository().getLemmaByName(tempIndex.getLemma());
-            Lemma lemma = repositoriesHolder.getLemmaRepository().findById(lemmaId).orElseThrow();
+        for (TempIndex tempIndex : COLLECTIONS_HOLDER.getTempIndexesList()) {
+            Lemma lemma = lemmasMapFromDB.get(tempIndex.getLemma());
             indexList.add(new Index(tempIndex.getPage(), lemma, tempIndex.getLemmaRank()));
         }
 
-        System.out.println("tempIndexList.size() - " + COLLECTIONS_HOLDER.getTempIndexList().size());
+        System.out.println("tempIndexList.size() - " + COLLECTIONS_HOLDER.getTempIndexesList().size());
         System.out.println("indexList.size() - " + indexList.size());
         repositoriesHolder.getIndexRepository().saveAll(indexList);
     }
