@@ -1,10 +1,10 @@
 package main.com.github.flotskiy.search.engine.crawler;
 
-import main.com.github.flotskiy.search.engine.lemmatizer.Lemmatizer;
+import main.com.github.flotskiy.search.engine.indexing.CollFiller;
 import main.com.github.flotskiy.search.engine.model.Page;
 import main.com.github.flotskiy.search.engine.dataholders.CollectionsHolder;
 import main.com.github.flotskiy.search.engine.dataholders.RepositoriesHolder;
-import main.com.github.flotskiy.search.engine.util.TempIndex;
+import main.com.github.flotskiy.search.engine.util.StringHelper;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -15,10 +15,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.RecursiveAction;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class PageCrawler extends RecursiveAction {
 
@@ -34,9 +31,7 @@ public class PageCrawler extends RecursiveAction {
 
     @Override
     protected void compute() {
-
-        List<PageCrawler> pagesList = new ArrayList<>();
-
+        List<PageCrawler> forkJoinPoolPagesList = new ArrayList<>();
         try {
             Thread.sleep(500);
             Connection connection = Jsoup.connect(pagePath)
@@ -60,81 +55,26 @@ public class PageCrawler extends RecursiveAction {
                 Elements anchors = document.select("body").select("a");
                 for (Element anchor : anchors) {
                     String href = anchor.absUrl("href");
-                    if (
-                            href.startsWith(homePage) &&
-                            isHrefToPage(href) &&
-                            !isPageAdded(href) &&
-                            !href.equals(homePage) &&
-                            !href.equals(homePage + "/")
-                    ) {
+                    if (StringHelper.isHrefValid(collHolder, homePage, href)) {
                         System.out.println("Added to set: " + href);
                         PageCrawler pageCrawler = new PageCrawler(collHolder, href, repoHolder);
-                        pagesList.add(pageCrawler);
+                        forkJoinPoolPagesList.add(pageCrawler);
                         pageCrawler.fork();
                     }
                 }
             }
 
-            String pathToSave = pagePath.substring(homePage.length());
+            String pathToSave = StringHelper.cutProtocolAndHost(pagePath, homePage);
             Page page = new Page(pathToSave, httpStatusCode, html);
-            collHolder.getPagesList().add(page);
-
-            if (httpStatusCode == 200) {
-                Document htmlDocument = Jsoup.parse(html);
-
-                String title = htmlDocument.title();
-                System.out.println(title);
-                Map<String, Integer> titleLemmasCount = Lemmatizer.getLemmasCountMap(title);
-
-                String bodyText = htmlDocument.body().text();
-                Map<String, Integer> bodyLemmasCount = Lemmatizer.getLemmasCountMap(bodyText);
-
-                Map<String, Integer> uniqueLemmasInTitleAndBody = Stream
-                        .concat(titleLemmasCount.entrySet().stream(), bodyLemmasCount.entrySet().stream())
-                        .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.summingInt(Map.Entry::getValue)));
-
-                System.out.println("Все леммы: " + uniqueLemmasInTitleAndBody);
-
-                float lemmaRank;
-
-                for (String lemma : uniqueLemmasInTitleAndBody.keySet()) {
-                    collHolder.getLemmasMap()
-                            .put(lemma, collHolder.getLemmasMap().getOrDefault(lemma, 0) + 1);
-                    lemmaRank = titleLemmasCount.getOrDefault(lemma, 0) *
-                                collHolder.getSelectorsAndWeight().get("title") +
-                                bodyLemmasCount.getOrDefault(lemma, 0) *
-                                collHolder.getSelectorsAndWeight().get("body");
-                    collHolder.getTempIndexesList().add(new TempIndex(page, lemma, lemmaRank));
-                }
-            }
+            CollFiller.addPageToPagesList(collHolder, page);
+            CollFiller.fillInLemmasMapAndTempIndexesList(collHolder, httpStatusCode, html, page);
 
         } catch (InterruptedException | IOException e) {
             e.printStackTrace();
         }
 
-        for (PageCrawler pageCrawler : pagesList) {
+        for (PageCrawler pageCrawler : forkJoinPoolPagesList) {
             pageCrawler.join();
         }
-    }
-
-    private boolean isPageAdded(String pagePath) {
-        pagePath += pagePath.endsWith("/") ? "" : "/";
-        if (!collHolder.getWebpagesPath().contains(pagePath)) {
-            collHolder.getWebpagesPath().add(pagePath);
-            return false;
-        }
-        System.out.println("\tPage was added before: " + pagePath);
-        return true;
-    }
-
-    private boolean isHrefToPage(String href) {
-        if (href.matches(".*(#|\\?).*")) {
-            return false;
-        }
-        return !href.matches(
-                ".*\\.(pdf|PDF|docx?|DOCX?|xlsx?|XLSX?|pptx?|PPTX?|jpe?g|JPE?G|gif|GIF|png|PNG" +
-                        "|mp3|MP3|mp4|MP4|aac|AAC|json|JSON|csv|CSV|exe|EXE|apk|APK|rar|RAR|zip|ZIP" +
-                        "|xml|XML|jar|JAR|bin|BIN|svg|SVG|nc|NC|webp|WEBP)/?"
-        );
     }
 }

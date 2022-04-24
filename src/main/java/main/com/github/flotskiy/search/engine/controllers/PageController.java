@@ -1,11 +1,11 @@
 package main.com.github.flotskiy.search.engine.controllers;
 
 import main.com.github.flotskiy.search.engine.crawler.PageCrawlerTest;
+import main.com.github.flotskiy.search.engine.indexing.RepoFiller;
 import main.com.github.flotskiy.search.engine.repositories.FieldRepository;
 import main.com.github.flotskiy.search.engine.repositories.IndexRepository;
 import main.com.github.flotskiy.search.engine.repositories.LemmaRepository;
 import main.com.github.flotskiy.search.engine.repositories.PageRepository;
-import main.com.github.flotskiy.search.engine.util.FieldInitializer;
 import main.com.github.flotskiy.search.engine.dataholders.RepositoriesHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,8 +33,8 @@ public class PageController {
         RepositoriesHolder repositoriesHolder =
                 new RepositoriesHolder(pageRepository, fieldRepository, lemmaRepository, indexRepository);
         long start = System.currentTimeMillis();
-        new FieldInitializer(repositoriesHolder.getFieldRepository()).init();
+        RepoFiller.fillInFieldsTable(repositoriesHolder);
         PageCrawlerTest.testCrawler(repositoriesHolder);
-        System.out.println("Время работы: " + (System.currentTimeMillis() - start) / 1000 + " секунд");
+        System.out.println("Duration of processing: " + (System.currentTimeMillis() - start) / 1000 + " s");
     }
 }

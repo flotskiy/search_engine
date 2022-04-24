@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "Lemmas", indexes = @javax.persistence.Index(name = "lemma_index", columnList = "lemma"))
+@Table(name = "Lemmas")
 public class Lemma {
 
     @Id

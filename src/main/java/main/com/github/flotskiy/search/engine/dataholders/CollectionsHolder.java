@@ -1,9 +1,7 @@
 package main.com.github.flotskiy.search.engine.dataholders;
 
-import main.com.github.flotskiy.search.engine.model.Field;
 import main.com.github.flotskiy.search.engine.model.Lemma;
 import main.com.github.flotskiy.search.engine.model.Page;
-import main.com.github.flotskiy.search.engine.repositories.FieldRepository;
 import main.com.github.flotskiy.search.engine.util.TempIndex;
 
 import java.util.*;
@@ -40,12 +38,5 @@ public class CollectionsHolder {
 
     public List<Lemma> getLemmasList() {
         return lemmasList;
-    }
-
-    public void fillInSelectorsAndWeigh(FieldRepository fieldRepository) {
-        Iterable<Field> fieldIterable = fieldRepository.findAll();
-        for (Field field : fieldIterable) {
-            selectorsAndWeight.put(field.getSelector(), field.getWeight());
-        }
     }
 }
