@@ -11,7 +11,7 @@ import java.net.URL;
 import java.util.concurrent.ForkJoinPool;
 
 public class PageCrawlerTest {
-    private static final String SOURCE = StringHelper.getPath();
+    private static final String SOURCE = StringHelper.getInputString();
     private static final CollectionsHolder COLLECTIONS_HOLDER = new CollectionsHolder();
 
     public static void testCrawler(RepositoriesHolder repositoriesHolder) throws IOException {

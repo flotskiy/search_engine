@@ -10,9 +10,9 @@ import java.io.InputStreamReader;
 public class StringHelper {
     private static final BufferedReader BUFFERED_READER = new BufferedReader(new InputStreamReader(System.in));
 
-    public static String getPath() {
+    public static String getInputString() {
         String input = "";
-        System.out.println("Please input site url:");
+        System.out.println("Please type smth:");
         try {
             input = BUFFERED_READER.readLine();
         } catch (IOException ex) {
@@ -38,7 +38,7 @@ public class StringHelper {
 
     public static boolean isHrefValid(CollectionsHolder holder, String homePage, String href) {
         return href.startsWith(homePage) &&
-                StringHelper.isHrefToPage(href) &&
+                isHrefToPage(href) &&
                 !CollFiller.isPageAdded(holder, href) &&
                 !href.equals(homePage) &&
                 !href.equals(homePage + "/");
