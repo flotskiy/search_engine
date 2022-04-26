@@ -18,7 +18,7 @@ public class QueryHandler {
         this.holder = holder;
     }
 
-    public List<Object[]> getPagesJoinedIndexList() {
+    public Set<Page> getPagesSet() {
         String query = StringHelper.getInputString();
         Set<String> queryWordsSet = Lemmatizer.getLemmasCountMap(query).keySet();
 
@@ -28,49 +28,24 @@ public class QueryHandler {
         }
 
         if (lemmasQueryList.size() < 1) {
-            return Collections.EMPTY_LIST;
+            return Collections.EMPTY_SET;
         }
 
-        int firstLemmaId = lemmasQueryList.get(0).getId();
-//        List<Page> pagesList = new ArrayList<>();
-//        Iterable<Page> pagesIterable = holder.getPageRepository().getPagesByFirstLemmaId(firstLemmaId);
-//        for (Page page : pagesIterable) {
-//            System.out.println(page.getPath() + " - " + page.getId());
-//        }
-//        pagesIterable.forEach(pagesList::add);
-
-        Iterable<Object[]> pagesJoinedWithIndexIterable =
-                holder.getPageRepository().getPagesJoinedWithIndex(firstLemmaId);
-
-        for (Object[] object : pagesJoinedWithIndexIterable) {
-            System.out.println(object[0] + " - " + object[1] + " - " + object[2].toString().length() +
-                    " - " + object[3] + " - " + object[4] + " - " + object[5] + " - " + object[6]);
+        int lemmaId = lemmasQueryList.get(0).getId();
+        Set<Page> pagesResultSet = new HashSet<>();
+        Set<Page> pagesTempSet = new HashSet<>();
+        Iterable<Page> pagesIterable = holder.getPageRepository().getPagesByLemmaId(lemmaId);
+        for (Page page : pagesIterable) {
+            System.out.println(page.getPath() + " - " + page.getId());
         }
+        pagesIterable.forEach(pagesResultSet::add);
 
-        List<Object[]> pagesJoinedWithIndexList =
-                new ArrayList<>((Collection<? extends Object[]>) pagesJoinedWithIndexIterable);
-
-        if (lemmasQueryList.size() == 1) {
-            return pagesJoinedWithIndexList;
+        for (int i = 1; i < lemmasQueryList.size(); i++) {
+            pagesIterable = holder.getPageRepository().getPagesByLemmaId(lemmasQueryList.get(i).getId());
+            pagesIterable.forEach(pagesTempSet::add);
+            pagesResultSet.retainAll(pagesTempSet);
         }
-
-//        for (int i = 0; i < lemmasQueryList.size() - 1; i++) {
-//            int lemmaId = lemmasQueryList.get(i).getId();
-//            for (Object[] objects : new ArrayList<>(pagesJoinedWithIndexList)) {
-//                boolean contains = false;
-//                if (objects[0]);
-//                if (contains) {
-//                    pagesJoinedWithIndexList.remove(objects);
-//                }
-//            }
-//        }
-
-
-
-        // todo:
-
-
-        return null;
+        return pagesResultSet;
     }
 
     private List<Lemma> getLemmasQueryList(Set<String> queryWordsSet) {

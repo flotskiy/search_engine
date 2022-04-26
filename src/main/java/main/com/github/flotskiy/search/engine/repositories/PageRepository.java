@@ -17,15 +17,5 @@ public interface PageRepository extends CrudRepository<Page, Integer> {
                     "WHERE s.lemma_id = :lemmaId",
             nativeQuery = true
     )
-    Iterable<Page> getPagesByFirstLemmaId(@Param("lemmaId") int lemmaId);
-
-    @Query(
-            value = "SELECT p.id as pid, p.code, p.content, p.path, s.id as sid, s.lemma_rank, s.lemma_id " +
-                    "FROM Pages p " +
-                    "JOIN Search_index s " +
-                    "ON p.id = s.page_id " +
-                    "WHERE s.lemma_id = :lemmaId",
-            nativeQuery = true
-    )
-    Iterable<Object[]> getPagesJoinedWithIndex(@Param("lemmaId") int lemmaId);
+    Iterable<Page> getPagesByLemmaId(@Param("lemmaId") int lemmaId);
 }

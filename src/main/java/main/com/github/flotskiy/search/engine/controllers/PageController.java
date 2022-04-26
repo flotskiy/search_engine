@@ -1,6 +1,7 @@
 package main.com.github.flotskiy.search.engine.controllers;
 
 import main.com.github.flotskiy.search.engine.model.Lemma;
+import main.com.github.flotskiy.search.engine.model.Page;
 import main.com.github.flotskiy.search.engine.repositories.FieldRepository;
 import main.com.github.flotskiy.search.engine.repositories.IndexRepository;
 import main.com.github.flotskiy.search.engine.repositories.LemmaRepository;
@@ -47,6 +48,8 @@ public class PageController {
 
         System.out.println("\nQueryHandler test\n");
         QueryHandler handler = new QueryHandler(repositoriesHolder);
-        handler.getPagesJoinedIndexList();
+        Set<Page> pages = handler.getPagesSet();
+        System.out.println("\nretainAll for sets testing");
+        pages.forEach(p ->System.out.println(p.getId() + " - " + p.getPath()));
     }
 }
