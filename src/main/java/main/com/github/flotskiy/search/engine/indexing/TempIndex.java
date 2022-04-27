@@ -1,4 +1,4 @@
-package main.com.github.flotskiy.search.engine.util;
+package main.com.github.flotskiy.search.engine.indexing;
 
 import lombok.Getter;
 import lombok.Setter;

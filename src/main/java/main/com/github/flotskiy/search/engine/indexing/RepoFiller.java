@@ -5,7 +5,6 @@ import main.com.github.flotskiy.search.engine.dataholders.RepositoriesHolder;
 import main.com.github.flotskiy.search.engine.model.Field;
 import main.com.github.flotskiy.search.engine.model.Index;
 import main.com.github.flotskiy.search.engine.model.Lemma;
-import main.com.github.flotskiy.search.engine.util.TempIndex;
 
 import java.util.ArrayList;
 import java.util.HashMap;

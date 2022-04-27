@@ -2,7 +2,7 @@ package main.com.github.flotskiy.search.engine.dataholders;
 
 import main.com.github.flotskiy.search.engine.model.Lemma;
 import main.com.github.flotskiy.search.engine.model.Page;
-import main.com.github.flotskiy.search.engine.util.TempIndex;
+import main.com.github.flotskiy.search.engine.indexing.TempIndex;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

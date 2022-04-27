@@ -5,8 +5,7 @@ import main.com.github.flotskiy.search.engine.dataholders.RepositoriesHolder;
 import main.com.github.flotskiy.search.engine.lemmatizer.Lemmatizer;
 import main.com.github.flotskiy.search.engine.model.Field;
 import main.com.github.flotskiy.search.engine.model.Page;
-import main.com.github.flotskiy.search.engine.util.TempIndex;
-import org.jsoup.Jsoup;
+import main.com.github.flotskiy.search.engine.util.JsoupHelper;
 import org.jsoup.nodes.Document;
 
 import java.util.Map;
@@ -30,7 +29,7 @@ public class CollFiller {
             return;
         }
 
-        Document htmlDocument = Jsoup.parse(html);
+        Document htmlDocument = JsoupHelper.getDocument(html);
 
         String title = htmlDocument.title();
         System.out.println(title);
