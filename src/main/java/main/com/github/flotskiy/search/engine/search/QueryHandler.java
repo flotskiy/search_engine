@@ -18,36 +18,30 @@ public class QueryHandler {
     public static List<SearchResultPage> getSearchResult(RepositoriesHolder holder) {
         List<Lemma> lemmasQueryList = getSortedLemmasQueryListWithFrequencyLessThan95(holder);
         List<Integer> lemmasIdList = lemmasQueryList.stream().map(Lemma::getId).collect(Collectors.toList());
+        List<String> lemmasStringList = lemmasQueryList.stream().map(Lemma::getLemma).collect(Collectors.toList());
         Set<Page> pages = getPagesSet(holder, lemmasQueryList);
-
-        System.out.println("\nretainAll for sets testing");
-        pages.forEach(p ->System.out.println(p.getId() + " - " + p.getPath()));
+        if (pages.isEmpty()) {
+            System.out.println("Nothing found!");
+            return Collections.EMPTY_LIST;
+        }
 
         List<SearchResultPage> searchResultPageList = new ArrayList<>();
-
-        String uri = "";
-        String title = "";
-        String snippet = "";
-        float relevance = 0f;
-        Document document = null;
+        String uri, title, snippet;
+        float relevance;
+        Document document;
 
         for (Page page : pages) {
             uri = page.getPath();
-
             document = JsoupHelper.getDocument(page.getContent());
             title = JsoupHelper.getTitle(document);
-
+            snippet = getSnippet(document, lemmasStringList);
             relevance = holder.getIndexRepository().getTotalLemmasRankForPage(page.getId(), lemmasIdList);
-
-            // todo: see document.getElementsContainingOwnText()
 
             SearchResultPage searchResultPage = new SearchResultPage(uri, title, snippet, relevance);
             searchResultPageList.add(searchResultPage);
         }
         searchResultPageList.sort((o1, o2) -> Float.compare(o2.getRelevance(), o1.getRelevance()));
-        searchResultPageList.forEach(System.out::println);
         convertAbsoluteRelevanceToRelative(searchResultPageList);
-        searchResultPageList.forEach(System.out::println);
         return searchResultPageList;
     }
 
@@ -60,9 +54,6 @@ public class QueryHandler {
         Set<Page> pagesResultSet = new HashSet<>();
         Set<Page> pagesTempSet = new HashSet<>();
         Iterable<Page> pagesIterable = holder.getPageRepository().getPagesByLemmaId(lemmaId);
-        for (Page page : pagesIterable) {
-            System.out.println(page.getPath() + " - " + page.getId());
-        }
         pagesIterable.forEach(pagesResultSet::add);
 
         for (int i = 1; i < lemmasQueryList.size(); i++) {
@@ -89,18 +80,35 @@ public class QueryHandler {
         List<Lemma> lemmasList = new ArrayList<>(modifiableTempSet);
         lemmasList.sort((l1, l2) -> l1.getFrequency() < l2.getFrequency() ? -1 : 1);
 
-        for (Lemma lemma : lemmasList) {
-            System.out.println(lemma.getFrequency() + " - " + lemma.getLemma());
-        }
-
         return lemmasList;
     }
 
     private static void convertAbsoluteRelevanceToRelative(List<SearchResultPage> searchResultPageList) {
-        System.out.println("convertAbsoluteRelevanceToRelative");
         float maxRelevanceValue = searchResultPageList.get(0).getRelevance();
         for (SearchResultPage result : searchResultPageList) {
             result.setRelevance(result.getRelevance() / maxRelevanceValue);
         }
+    }
+
+    private static String getSnippet(Document document, List<String> queryList) {
+        String documentText = document.text();
+        List<String> textList = new ArrayList<>(Arrays.asList(documentText.split("\\s+")));
+        List<String> textListLemmatized = Lemmatizer.getLemmatizedList(textList);
+
+        Map<Integer, String> textMapLemmatized =
+                textListLemmatized.stream().collect(HashMap::new, (map, s) -> map.put(map.size(), s), Map::putAll);
+        Map<Integer, String> filteredMap = textMapLemmatized.entrySet().stream()
+                .filter(e -> {
+                    for (String queryWord : queryList) {
+                        if (queryWord.equals(e.getValue())) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }).collect(HashMap::new, (map, e) -> map.put(e.getKey(), e.getValue()), Map::putAll);
+        List<Integer> lemmasPositions = new ArrayList<>(filteredMap.keySet());
+        lemmasPositions.sort(Integer::compareTo);
+
+        return StringHelper.buildSnippet(textList, lemmasPositions);
     }
 }

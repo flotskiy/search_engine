@@ -40,4 +40,20 @@ public class Lemmatizer {
                          .noneMatch(baseFormWord -> baseFormWord.matches(SERVICE_PARTS_OF_SPEECH)))
                  .collect(Collectors.toList());
     }
+
+    public static List<String> getLemmatizedList(List<String> list) {
+        return list
+                .stream()
+                .map(s -> s = s.matches("[^(.+)?[а-яёА-ЯЁ]+(.+)?]") ? "в" : s)
+                .map(String::toLowerCase)
+                .map(Lemmatizer::getCirillicWord)
+                .map(s -> s = s.length() < 1 ? "в" : s)
+                .map(s -> s = luceneMorphology.getMorphInfo(s).toString().matches(SERVICE_PARTS_OF_SPEECH) ?
+                                        "" : luceneMorphology.getNormalForms(s).get(0))
+                .collect(Collectors.toList());
+    }
+
+    private static String getCirillicWord(String word) {
+        return word.replaceAll("[^а-яё]", "");
+    }
 }
