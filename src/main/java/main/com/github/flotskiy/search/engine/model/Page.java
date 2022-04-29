@@ -27,6 +27,10 @@ public class Page {
     @Column(columnDefinition = "MEDIUMTEXT", nullable = false)
     private String content;
 
+    @ManyToOne
+    @JoinColumn(name = "site_id", referencedColumnName = "id", nullable = false)
+    private Site siteId;
+
     @OneToMany(mappedBy = "pageId", cascade = CascadeType.ALL)
     private List<Index> indexes;
 

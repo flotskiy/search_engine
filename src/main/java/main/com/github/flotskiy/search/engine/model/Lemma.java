@@ -24,6 +24,10 @@ public class Lemma {
     @Column(nullable = false)
     private int frequency;
 
+    @ManyToOne
+    @JoinColumn(name = "site_id", referencedColumnName = "id", nullable = false)
+    private Site siteId;
+
     @OneToMany(mappedBy = "lemmaId", cascade = CascadeType.ALL)
     private List<Index> indexes;
 
