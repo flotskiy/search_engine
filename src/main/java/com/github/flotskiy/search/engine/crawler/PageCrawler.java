@@ -5,6 +5,7 @@ import com.github.flotskiy.search.engine.dataholders.RepositoriesHolder;
 import com.github.flotskiy.search.engine.indexing.CollFiller;
 import com.github.flotskiy.search.engine.model.Page;
 import com.github.flotskiy.search.engine.util.StringHelper;
+import com.github.flotskiy.search.engine.util.YmlConfig;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -35,10 +36,9 @@ public class PageCrawler extends RecursiveAction {
         try {
             Thread.sleep(500);
             Connection connection = Jsoup.connect(pagePath)
-                    .userAgent("Mozilla / 5.0 (Windows NT 10.0; Win64; x64) AppleWebKit / " +
-                            "537.36 (KHTML, как Gecko) Chrome / 81.0.4044.92 Safari / 537.36")
+                    .userAgent(YmlConfig.getConnectUseragent())
 //                    .userAgent("FlotskiySearchBot")
-                    .referrer("http://www.google.com")
+                    .referrer(YmlConfig.getConnectReferrer())
                     .ignoreHttpErrors(true);
 
             URL url = new URL(pagePath);
