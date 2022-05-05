@@ -40,4 +40,11 @@ public class Site {
 
     @OneToMany(mappedBy = "siteId", cascade = CascadeType.ALL)
     private List<Lemma> lemmas;
+
+    public Site(Status status, Date statusTime, String url, String name) {
+        this.status = status;
+        this.statusTime = statusTime;
+        this.url = url;
+        this.name = name;
+    }
 }

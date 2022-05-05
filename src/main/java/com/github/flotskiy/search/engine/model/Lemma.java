@@ -31,8 +31,9 @@ public class Lemma {
     @OneToMany(mappedBy = "lemmaId", cascade = CascadeType.ALL)
     private List<Index> indexes;
 
-    public Lemma(String lemma, int frequency) {
+    public Lemma(String lemma, int frequency, Site siteId) {
         this.lemma = lemma;
         this.frequency = frequency;
+        this.siteId = siteId;
     }
 }

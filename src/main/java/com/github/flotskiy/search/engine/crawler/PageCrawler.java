@@ -3,6 +3,7 @@ package com.github.flotskiy.search.engine.crawler;
 import com.github.flotskiy.search.engine.dataholders.RepositoriesHolder;
 import com.github.flotskiy.search.engine.indexing.CollFiller;
 import com.github.flotskiy.search.engine.model.Page;
+import com.github.flotskiy.search.engine.model.Site;
 import com.github.flotskiy.search.engine.util.StringHelper;
 import com.github.flotskiy.search.engine.util.YmlConfig;
 import org.jsoup.Connection;
@@ -21,10 +22,12 @@ public class PageCrawler extends RecursiveAction {
 
     private final String pagePath;
     private final RepositoriesHolder repoHolder;
+    private final Site site;
 
-    public PageCrawler(String pagePath, RepositoriesHolder repoHolder) {
+    public PageCrawler(String pagePath, RepositoriesHolder repoHolder, Site site) {
         this.pagePath = pagePath;
         this.repoHolder = repoHolder;
+        this.site = site;
     }
 
     @Override
@@ -54,7 +57,7 @@ public class PageCrawler extends RecursiveAction {
                     String href = anchor.absUrl("href");
                     if (StringHelper.isHrefValid(homePage, href)) {
                         System.out.println("Added to set: " + href);
-                        PageCrawler pageCrawler = new PageCrawler(href, repoHolder);
+                        PageCrawler pageCrawler = new PageCrawler(href, repoHolder, site);
                         forkJoinPoolPagesList.add(pageCrawler);
                         pageCrawler.fork();
                     }
@@ -62,9 +65,9 @@ public class PageCrawler extends RecursiveAction {
             }
 
             String pathToSave = StringHelper.cutProtocolAndHost(pagePath, homePage);
-            Page page = new Page(pathToSave, httpStatusCode, html);
+            Page page = new Page(pathToSave, httpStatusCode, html, site);
             CollFiller.addPageToPagesList(page);
-            CollFiller.fillInLemmasMapAndTempIndexesList(httpStatusCode, html, page);
+            CollFiller.fillInLemmasMapAndTempIndexList(httpStatusCode, html, page, site);
 
         } catch (InterruptedException | IOException e) {
             e.printStackTrace();

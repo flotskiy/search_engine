@@ -5,6 +5,8 @@ import com.github.flotskiy.search.engine.indexing.CollFiller;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -35,7 +37,7 @@ public class StringHelper {
         return !href.matches(
                 ".*\\.(pdf|PDF|docx?|DOCX?|xlsx?|XLSX?|pptx?|PPTX?|jpe?g|JPE?G|gif|GIF|png|PNG" +
                         "|mp3|MP3|mp4|MP4|aac|AAC|json|JSON|csv|CSV|exe|EXE|apk|APK|rar|RAR|zip|ZIP" +
-                        "|xml|XML|jar|JAR|bin|BIN|svg|SVG|nc|NC|webp|WEBP)/?"
+                        "|xml|XML|jar|JAR|bin|BIN|svg|SVG|nc|NC|webp|WEBP|m|M)/?"
         );
     }
 
@@ -102,5 +104,15 @@ public class StringHelper {
                 builder.deleteCharAt(builder.length() - 1).append("...\n");
             }
         }
+    }
+
+    public static String getHomePage(String urlString) {
+        URL url = null;
+        try {
+            url = new URL(urlString);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        return url.getProtocol() + "://" + url.getHost() + "/";
     }
 }

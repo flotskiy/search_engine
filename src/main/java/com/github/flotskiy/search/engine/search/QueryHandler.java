@@ -57,6 +57,7 @@ public class QueryHandler {
         pagesIterable.forEach(pagesResultSet::add);
 
         for (int i = 1; i < lemmasQueryList.size(); i++) {
+            pagesTempSet.clear();
             pagesIterable = holder.getPageRepository().getPagesByLemmaId(lemmasQueryList.get(i).getId());
             pagesIterable.forEach(pagesTempSet::add);
             pagesResultSet.retainAll(pagesTempSet);

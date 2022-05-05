@@ -18,17 +18,24 @@ public class RepoFiller {
         repositoriesHolder.getFieldRepository().save(new Field("body", "body", 0.8f));
     }
 
+    public static void fillInSites(RepositoriesHolder repositoriesHolder) {
+        repositoriesHolder.getSiteRepository().saveAll(CollectionsHolder.getSiteList());
+    }
+
     public static void fillInPages(RepositoriesHolder repositoriesHolder) {
-        repositoriesHolder.getPageRepository().saveAll(CollectionsHolder.getPagesList());
+        repositoriesHolder.getPageRepository().saveAll(CollectionsHolder.getPageList());
+        CollectionsHolder.getPageList().clear();
     }
 
     public static void fillInLemmas(RepositoriesHolder repositoriesHolder) {
-        System.out.println("Размер lemmasMap - " + CollectionsHolder.getLemmasMap().size());
-        for (String key : CollectionsHolder.getLemmasMap().keySet()) {
-            Lemma lemma = new Lemma(key, CollectionsHolder.getLemmasMap().get(key));
-            CollectionsHolder.getLemmasList().add(lemma);
+        System.out.println("lemmasMap size - " + CollectionsHolder.getSiteLemmaMap().size());
+        for (SiteLemmaPair pair : CollectionsHolder.getSiteLemmaMap().keySet()) {
+            Lemma lemma = new Lemma(pair.getLemma(), CollectionsHolder.getSiteLemmaMap().get(pair), pair.getSite());
+            CollectionsHolder.getLemmaList().add(lemma);
         }
-        repositoriesHolder.getLemmaRepository().saveAll(CollectionsHolder.getLemmasList());
+        repositoriesHolder.getLemmaRepository().saveAll(CollectionsHolder.getLemmaList());
+        CollectionsHolder.getSiteLemmaMap().clear();
+        CollectionsHolder.getLemmaList().clear();
     }
 
     public static void fillInSearchIndex(RepositoriesHolder repositoriesHolder) {
@@ -39,13 +46,14 @@ public class RepoFiller {
         }
 
         List<Index> indexList = new ArrayList<>();
-        for (TempIndex tempIndex : CollectionsHolder.getTempIndexesList()) {
+        for (TempIndex tempIndex : CollectionsHolder.getTempIndexList()) {
             Lemma lemma = lemmasMapFromDB.get(tempIndex.getLemma());
             indexList.add(new Index(tempIndex.getPage(), lemma, tempIndex.getLemmaRank()));
         }
 
-        System.out.println("tempIndexList.size() - " + CollectionsHolder.getTempIndexesList().size());
+        System.out.println("tempIndexList.size() - " + CollectionsHolder.getTempIndexList().size());
         System.out.println("indexList.size() - " + indexList.size());
         repositoriesHolder.getIndexRepository().saveAll(indexList);
+        CollectionsHolder.getTempIndexList().clear();
     }
 }

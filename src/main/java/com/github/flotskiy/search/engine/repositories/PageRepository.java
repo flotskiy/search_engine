@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 public interface PageRepository extends CrudRepository<Page, Integer> {
 
     @Query(
-            value = "SELECT p.id, p.code, p.content, p.path " +
+            value = "SELECT p.id, p.code, p.content, p.path, p.site_id " +
                     "FROM Pages p " +
                     "JOIN Search_index s " +
                     "ON p.id = s.page_id " +

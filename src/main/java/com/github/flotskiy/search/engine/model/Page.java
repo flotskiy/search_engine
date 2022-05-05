@@ -34,9 +34,10 @@ public class Page {
     @OneToMany(mappedBy = "pageId", cascade = CascadeType.ALL)
     private List<Index> indexes;
 
-    public Page(String path, int code, String content) {
+    public Page(String path, int code, String content, Site siteId) {
         this.path = path;
         this.code = code;
         this.content = content;
+        this.siteId = siteId;
     }
 }

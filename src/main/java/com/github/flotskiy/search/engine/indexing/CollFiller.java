@@ -3,11 +3,14 @@ package com.github.flotskiy.search.engine.indexing;
 import com.github.flotskiy.search.engine.dataholders.CollectionsHolder;
 import com.github.flotskiy.search.engine.dataholders.RepositoriesHolder;
 import com.github.flotskiy.search.engine.model.Page;
+import com.github.flotskiy.search.engine.model.Site;
+import com.github.flotskiy.search.engine.model.Status;
 import com.github.flotskiy.search.engine.util.JsoupHelper;
 import com.github.flotskiy.search.engine.lemmatizer.Lemmatizer;
 import com.github.flotskiy.search.engine.model.Field;
 import org.jsoup.nodes.Document;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -21,7 +24,14 @@ public class CollFiller {
         }
     }
 
-    public static void fillInLemmasMapAndTempIndexesList(int code, String html, Page page) {
+    public static void fillInSiteList(Map<String, String> SOURCES_MAP) {
+        for (Map.Entry<String, String> entry : SOURCES_MAP.entrySet()) {
+            Site site = new Site(Status.INDEXING, new Date(), entry.getValue(), entry.getKey());
+            CollectionsHolder.getSiteList().add(site);
+        }
+    }
+
+    public static void fillInLemmasMapAndTempIndexList(int code, String html, Page page, Site site) {
         if (code != 200) {
             return;
         }
@@ -41,11 +51,15 @@ public class CollFiller {
         System.out.println("Все леммы: " + uniqueLemmasInTitleAndBody);
 
         for (String lemma : uniqueLemmasInTitleAndBody.keySet()) {
-            CollectionsHolder.getLemmasMap()
-                    .put(lemma, CollectionsHolder.getLemmasMap().getOrDefault(lemma, 0) + 1);
+            SiteLemmaPair siteLemmaPair = new SiteLemmaPair(lemma, site);
+            CollectionsHolder.getSiteLemmaMap()
+                    .put(
+                            siteLemmaPair,
+                            CollectionsHolder.getSiteLemmaMap().getOrDefault(siteLemmaPair, 0) + 1
+                    );
             float lemmaRank =
                     CollFiller.calculateLemmaRank(lemma, titleLemmasCount, bodyLemmasCount);
-            CollectionsHolder.getTempIndexesList().add(new TempIndex(page, lemma, lemmaRank));
+            CollectionsHolder.getTempIndexList().add(new TempIndex(page, lemma, lemmaRank));
         }
     }
 
@@ -60,7 +74,7 @@ public class CollFiller {
     }
 
     public static void addPageToPagesList(Page page) {
-        CollectionsHolder.getPagesList().add(page);
+        CollectionsHolder.getPageList().add(page);
     }
 
     public static float calculateLemmaRank(
