@@ -1,6 +1,5 @@
 package com.github.flotskiy.search.engine.util;
 
-import com.github.flotskiy.search.engine.dataholders.CollectionsHolder;
 import com.github.flotskiy.search.engine.indexing.CollFiller;
 
 import java.io.BufferedReader;
@@ -40,10 +39,10 @@ public class StringHelper {
         );
     }
 
-    public static boolean isHrefValid(CollectionsHolder holder, String homePage, String href) {
+    public static boolean isHrefValid(String homePage, String href) {
         return href.startsWith(homePage) &&
                 isHrefToPage(href) &&
-                !CollFiller.isPageAdded(holder, href) &&
+                !CollFiller.isPageAdded(href) &&
                 !href.equals(homePage) &&
                 !href.equals(homePage + "/");
     }

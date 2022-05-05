@@ -14,17 +14,14 @@ import java.util.stream.Stream;
 
 public class CollFiller {
 
-    public static void fillInSelectorsAndWeigh(
-            CollectionsHolder collectionsHolder,
-            RepositoriesHolder repositoriesHolder
-    ) {
+    public static void fillInSelectorsAndWeigh(RepositoriesHolder repositoriesHolder) {
         Iterable<Field> fieldIterable = repositoriesHolder.getFieldRepository().findAll();
         for (Field field : fieldIterable) {
-            collectionsHolder.getSelectorsAndWeight().put(field.getSelector(), field.getWeight());
+            CollectionsHolder.getSelectorsAndWeight().put(field.getSelector(), field.getWeight());
         }
     }
 
-    public static void fillInLemmasMapAndTempIndexesList(CollectionsHolder holder, int code, String html, Page page) {
+    public static void fillInLemmasMapAndTempIndexesList(int code, String html, Page page) {
         if (code != 200) {
             return;
         }
@@ -44,37 +41,36 @@ public class CollFiller {
         System.out.println("Все леммы: " + uniqueLemmasInTitleAndBody);
 
         for (String lemma : uniqueLemmasInTitleAndBody.keySet()) {
-            holder.getLemmasMap()
-                    .put(lemma, holder.getLemmasMap().getOrDefault(lemma, 0) + 1);
+            CollectionsHolder.getLemmasMap()
+                    .put(lemma, CollectionsHolder.getLemmasMap().getOrDefault(lemma, 0) + 1);
             float lemmaRank =
-                    CollFiller.calculateLemmaRank(holder, lemma, titleLemmasCount, bodyLemmasCount);
-            holder.getTempIndexesList().add(new TempIndex(page, lemma, lemmaRank));
+                    CollFiller.calculateLemmaRank(lemma, titleLemmasCount, bodyLemmasCount);
+            CollectionsHolder.getTempIndexesList().add(new TempIndex(page, lemma, lemmaRank));
         }
     }
 
-    public static boolean isPageAdded(CollectionsHolder holder, String pagePath) {
+    public static boolean isPageAdded(String pagePath) {
         pagePath += pagePath.endsWith("/") ? "" : "/";
-        if (!holder.getWebpagesPath().contains(pagePath)) {
-            holder.getWebpagesPath().add(pagePath);
+        if (!CollectionsHolder.getWebpagesPath().contains(pagePath)) {
+            CollectionsHolder.getWebpagesPath().add(pagePath);
             return false;
         }
         System.out.println("\tPage was added before: " + pagePath);
         return true;
     }
 
-    public static void addPageToPagesList(CollectionsHolder holder, Page page) {
-        holder.getPagesList().add(page);
+    public static void addPageToPagesList(Page page) {
+        CollectionsHolder.getPagesList().add(page);
     }
 
     public static float calculateLemmaRank(
-            CollectionsHolder holder,
             String lemma,
             Map<String, Integer> titleLemmasCount,
             Map<String, Integer> bodyLemmasCount
             ) {
         return titleLemmasCount.getOrDefault(lemma, 0) *
-                holder.getSelectorsAndWeight().get("title") +
+                CollectionsHolder.getSelectorsAndWeight().get("title") +
                 bodyLemmasCount.getOrDefault(lemma, 0) *
-                holder.getSelectorsAndWeight().get("body");
+                CollectionsHolder.getSelectorsAndWeight().get("body");
     }
 }

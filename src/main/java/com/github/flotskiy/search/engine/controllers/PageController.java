@@ -36,7 +36,7 @@ public class PageController {
         RepositoriesHolder repositoriesHolder =
                 new RepositoriesHolder(pageRepository, fieldRepository, lemmaRepository, indexRepository);
         long start = System.currentTimeMillis();
-        RepoFiller.fillInFieldsTable(repositoriesHolder);
+        RepoFiller.fillInFields(repositoriesHolder);
         PageCrawlerTest.testCrawler(repositoriesHolder);
         System.out.println("Duration of processing: " + (System.currentTimeMillis() - start) / 1000 + " s");
         System.out.println("\nQueryHandler test\n");

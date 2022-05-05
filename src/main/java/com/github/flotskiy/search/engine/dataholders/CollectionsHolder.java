@@ -8,35 +8,35 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class CollectionsHolder {
-    private final ConcurrentHashMap<String, String> webpagesPathMap = new ConcurrentHashMap<>();
-    private final Set<String> webpagesPath = webpagesPathMap.keySet("default");
-    private final ConcurrentHashMap<String, Integer> lemmasMap = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, Float> selectorsAndWeight = new ConcurrentHashMap<>();
-    private final List<Page> pagesList = Collections.synchronizedList(new ArrayList<>());
-    private final List<TempIndex> tempIndexesList = Collections.synchronizedList(new ArrayList<>());
-    private final List<Lemma> lemmasList = new ArrayList<>();
+    private static final ConcurrentHashMap<String, String> WEBPAGES_PATH_MAP = new ConcurrentHashMap<>();
+    private static final Set<String> WEBPAGES_PATH = WEBPAGES_PATH_MAP.keySet("default");
+    private static final ConcurrentHashMap<String, Integer> LEMMAS_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Float> SELECTORS_AND_WEIGHT = new ConcurrentHashMap<>();
+    private static final List<Page> PAGES_LIST = Collections.synchronizedList(new ArrayList<>());
+    private static final List<TempIndex> TEMP_INDEXES_LIST = Collections.synchronizedList(new ArrayList<>());
+    private static final List<Lemma> LEMMAS_LIST = new ArrayList<>();
 
-    public Set<String> getWebpagesPath() {
-        return webpagesPath;
+    public static Set<String> getWebpagesPath() {
+        return WEBPAGES_PATH;
     }
 
-    public ConcurrentHashMap<String, Integer> getLemmasMap() {
-        return lemmasMap;
+    public static ConcurrentHashMap<String, Integer> getLemmasMap() {
+        return LEMMAS_MAP;
     }
 
-    public ConcurrentHashMap<String, Float> getSelectorsAndWeight() {
-        return selectorsAndWeight;
+    public static ConcurrentHashMap<String, Float> getSelectorsAndWeight() {
+        return SELECTORS_AND_WEIGHT;
     }
 
-    public List<Page> getPagesList() {
-        return pagesList;
+    public static List<Page> getPagesList() {
+        return PAGES_LIST;
     }
 
-    public List<TempIndex> getTempIndexesList() {
-        return tempIndexesList;
+    public static List<TempIndex> getTempIndexesList() {
+        return TEMP_INDEXES_LIST;
     }
 
-    public List<Lemma> getLemmasList() {
-        return lemmasList;
+    public static List<Lemma> getLemmasList() {
+        return LEMMAS_LIST;
     }
 }

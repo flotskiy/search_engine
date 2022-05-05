@@ -1,6 +1,5 @@
 package com.github.flotskiy.search.engine.crawler;
 
-import com.github.flotskiy.search.engine.dataholders.CollectionsHolder;
 import com.github.flotskiy.search.engine.dataholders.RepositoriesHolder;
 import com.github.flotskiy.search.engine.indexing.CollFiller;
 import com.github.flotskiy.search.engine.model.Page;
@@ -20,12 +19,10 @@ import java.util.concurrent.RecursiveAction;
 
 public class PageCrawler extends RecursiveAction {
 
-    private final CollectionsHolder collHolder;
     private final String pagePath;
     private final RepositoriesHolder repoHolder;
 
-    public PageCrawler(CollectionsHolder collHolder, String pagePath, RepositoriesHolder repoHolder) {
-        this.collHolder = collHolder;
+    public PageCrawler(String pagePath, RepositoriesHolder repoHolder) {
         this.pagePath = pagePath;
         this.repoHolder = repoHolder;
     }
@@ -55,9 +52,9 @@ public class PageCrawler extends RecursiveAction {
                 Elements anchors = document.select("body").select("a");
                 for (Element anchor : anchors) {
                     String href = anchor.absUrl("href");
-                    if (StringHelper.isHrefValid(collHolder, homePage, href)) {
+                    if (StringHelper.isHrefValid(homePage, href)) {
                         System.out.println("Added to set: " + href);
-                        PageCrawler pageCrawler = new PageCrawler(collHolder, href, repoHolder);
+                        PageCrawler pageCrawler = new PageCrawler(href, repoHolder);
                         forkJoinPoolPagesList.add(pageCrawler);
                         pageCrawler.fork();
                     }
@@ -66,8 +63,8 @@ public class PageCrawler extends RecursiveAction {
 
             String pathToSave = StringHelper.cutProtocolAndHost(pagePath, homePage);
             Page page = new Page(pathToSave, httpStatusCode, html);
-            CollFiller.addPageToPagesList(collHolder, page);
-            CollFiller.fillInLemmasMapAndTempIndexesList(collHolder, httpStatusCode, html, page);
+            CollFiller.addPageToPagesList(page);
+            CollFiller.fillInLemmasMapAndTempIndexesList(httpStatusCode, html, page);
 
         } catch (InterruptedException | IOException e) {
             e.printStackTrace();

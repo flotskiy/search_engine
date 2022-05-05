@@ -13,34 +13,25 @@ import java.util.Map;
 
 public class RepoFiller {
 
-    public static void fillInFieldsTable(RepositoriesHolder repositoriesHolder) {
+    public static void fillInFields(RepositoriesHolder repositoriesHolder) {
         repositoriesHolder.getFieldRepository().save(new Field("title", "title", 1.0f));
         repositoriesHolder.getFieldRepository().save(new Field("body", "body", 0.8f));
     }
 
-    public static void fillInPagesTable(
-            CollectionsHolder collectionsHolder,
-            RepositoriesHolder repositoriesHolder
-    ) {
-        repositoriesHolder.getPageRepository().saveAll(collectionsHolder.getPagesList());
+    public static void fillInPages(RepositoriesHolder repositoriesHolder) {
+        repositoriesHolder.getPageRepository().saveAll(CollectionsHolder.getPagesList());
     }
 
-    public static void fillInLemmasTable(
-            CollectionsHolder collectionsHolder,
-            RepositoriesHolder repositoriesHolder
-    ) {
-        System.out.println("Размер lemmasMap - " + collectionsHolder.getLemmasMap().size());
-        for (String key : collectionsHolder.getLemmasMap().keySet()) {
-            Lemma lemma = new Lemma(key, collectionsHolder.getLemmasMap().get(key));
-            collectionsHolder.getLemmasList().add(lemma);
+    public static void fillInLemmas(RepositoriesHolder repositoriesHolder) {
+        System.out.println("Размер lemmasMap - " + CollectionsHolder.getLemmasMap().size());
+        for (String key : CollectionsHolder.getLemmasMap().keySet()) {
+            Lemma lemma = new Lemma(key, CollectionsHolder.getLemmasMap().get(key));
+            CollectionsHolder.getLemmasList().add(lemma);
         }
-        repositoriesHolder.getLemmaRepository().saveAll(collectionsHolder.getLemmasList());
+        repositoriesHolder.getLemmaRepository().saveAll(CollectionsHolder.getLemmasList());
     }
 
-    public static void fillInSearchIndexTable(
-            CollectionsHolder collectionsHolder,
-            RepositoriesHolder repositoriesHolder
-    ) {
+    public static void fillInSearchIndex(RepositoriesHolder repositoriesHolder) {
         Iterable<Lemma> lemmaIterable = repositoriesHolder.getLemmaRepository().findAll();
         Map<String, Lemma> lemmasMapFromDB = new HashMap<>();
         for (Lemma lemma : lemmaIterable) {
@@ -48,12 +39,12 @@ public class RepoFiller {
         }
 
         List<Index> indexList = new ArrayList<>();
-        for (TempIndex tempIndex : collectionsHolder.getTempIndexesList()) {
+        for (TempIndex tempIndex : CollectionsHolder.getTempIndexesList()) {
             Lemma lemma = lemmasMapFromDB.get(tempIndex.getLemma());
             indexList.add(new Index(tempIndex.getPage(), lemma, tempIndex.getLemmaRank()));
         }
 
-        System.out.println("tempIndexList.size() - " + collectionsHolder.getTempIndexesList().size());
+        System.out.println("tempIndexList.size() - " + CollectionsHolder.getTempIndexesList().size());
         System.out.println("indexList.size() - " + indexList.size());
         repositoriesHolder.getIndexRepository().saveAll(indexList);
     }
