@@ -35,10 +35,10 @@ public class PageController {
     public void start() throws IOException {
         RepositoriesHolder repositoriesHolder =
                 new RepositoriesHolder(pageRepository, fieldRepository, lemmaRepository, indexRepository, siteRepository);
-//        long start = System.currentTimeMillis();
-//        RepoFiller.fillInFields(repositoriesHolder);
-//        PageCrawlerStarter.testCrawler(repositoriesHolder);
-//        System.out.println("Duration of processing: " + (System.currentTimeMillis() - start) / 1000 + " s");
+        long start = System.currentTimeMillis();
+        RepoFiller.fillInFields(repositoriesHolder);
+        PageCrawlerStarter.testCrawler(repositoriesHolder);
+        System.out.println("Duration of processing: " + (System.currentTimeMillis() - start) / 1000 + " s");
         System.out.println("\nQueryHandler test\n");
         List<SearchResultPage> searchResultPageList = QueryHandler.getSearchResult(repositoriesHolder);
         searchResultPageList.forEach(System.out::println);

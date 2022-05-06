@@ -3,6 +3,8 @@ package com.github.flotskiy.search.engine.model;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import java.util.List;
@@ -29,9 +31,10 @@ public class Page {
 
     @ManyToOne
     @JoinColumn(name = "site_id", referencedColumnName = "id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Site siteId;
 
-    @OneToMany(mappedBy = "pageId", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "pageId", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Index> indexes;
 
     public Page(String path, int code, String content, Site siteId) {
