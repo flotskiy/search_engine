@@ -1,6 +1,8 @@
 package com.github.flotskiy.search.engine.util;
 
 import com.github.flotskiy.search.engine.indexing.CollFiller;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,11 +13,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+@Component
 public class StringHelper {
-    private static final BufferedReader BUFFERED_READER = new BufferedReader(new InputStreamReader(System.in));
-    private static final int SNIPPET_BORDER = 5;
+    private final BufferedReader BUFFERED_READER = new BufferedReader(new InputStreamReader(System.in));
+    private final int SNIPPET_BORDER = 5;
 
-    public static String getInputString() {
+    private final CollFiller collFiller;
+
+    @Autowired
+    public StringHelper(CollFiller collFiller) {
+        this.collFiller = collFiller;
+    }
+
+    public String getInputString() {
         String input = "";
         System.out.println("Please type smth:");
         try {
@@ -26,11 +36,11 @@ public class StringHelper {
         return input;
     }
 
-    public static String cutProtocolAndHost(String pagePath, String homePage) {
+    public String cutProtocolAndHost(String pagePath, String homePage) {
         return pagePath.substring(homePage.length());
     }
 
-    public static boolean isHrefToPage(String href) {
+    public boolean isHrefToPage(String href) {
         if (href.matches(".*(#|\\?).*")) {
             return false;
         }
@@ -41,15 +51,15 @@ public class StringHelper {
         );
     }
 
-    public static boolean isHrefValid(String homePage, String href) {
+    public boolean isHrefValid(String homePage, String href) {
         return href.startsWith(homePage) &&
                 isHrefToPage(href) &&
-                !CollFiller.isPageAdded(href) &&
+                !collFiller.isPageAdded(href) &&
                 !href.equals(homePage) &&
                 !href.equals(homePage + "/");
     }
 
-    public static String buildSnippet(List<String> textList, List<Integer> lemmasPositions) {
+    public String buildSnippet(List<String> textList, List<Integer> lemmasPositions) {
         if (lemmasPositions.size() == 0) {
             return "";
         }
@@ -80,11 +90,11 @@ public class StringHelper {
         return builder.toString();
     }
 
-    private static boolean isLastEntry(Map.Entry<Integer, Integer> entry, List<Integer> lemmasPositions, int border) {
+    private boolean isLastEntry(Map.Entry<Integer, Integer> entry, List<Integer> lemmasPositions, int border) {
         return (entry.getValue() - border) == lemmasPositions.get(lemmasPositions.size() - 1);
     }
 
-    private static void buildStringBuilder(
+    private void buildStringBuilder(
             StringBuilder builder,
             List<String> textList,
             List<Integer> lemmasPositions,
@@ -106,7 +116,7 @@ public class StringHelper {
         }
     }
 
-    public static String getHomePage(String urlString) {
+    public String getHomePage(String urlString) {
         URL url = null;
         try {
             url = new URL(urlString);

@@ -1,7 +1,12 @@
 package com.github.flotskiy.search.engine.dataholders;
 
 import com.github.flotskiy.search.engine.repositories.*;
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Getter
+@Component
 public class RepositoriesHolder {
     private final PageRepository pageRepository;
     private final FieldRepository fieldRepository;
@@ -9,6 +14,7 @@ public class RepositoriesHolder {
     private final IndexRepository indexRepository;
     private final SiteRepository siteRepository;
 
+    @Autowired
     public RepositoriesHolder(
             PageRepository pageRepository,
             FieldRepository fieldRepository,
@@ -21,25 +27,5 @@ public class RepositoriesHolder {
         this.lemmaRepository = lemmaRepository;
         this.indexRepository = indexRepository;
         this.siteRepository = siteRepository;
-    }
-
-    public PageRepository getPageRepository() {
-        return pageRepository;
-    }
-
-    public FieldRepository getFieldRepository() {
-        return fieldRepository;
-    }
-
-    public LemmaRepository getLemmaRepository() {
-        return lemmaRepository;
-    }
-
-    public IndexRepository getIndexRepository() {
-        return indexRepository;
-    }
-
-    public SiteRepository getSiteRepository() {
-        return siteRepository;
     }
 }

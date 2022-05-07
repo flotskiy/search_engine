@@ -1,11 +1,9 @@
-package com.github.flotskiy.search.engine.crawler;
+package com.github.flotskiy.search.engine.indexing;
 
-import com.github.flotskiy.search.engine.dataholders.RepositoriesHolder;
-import com.github.flotskiy.search.engine.indexing.CollFiller;
 import com.github.flotskiy.search.engine.model.Page;
 import com.github.flotskiy.search.engine.model.Site;
 import com.github.flotskiy.search.engine.util.StringHelper;
-import com.github.flotskiy.search.engine.util.YmlConfig;
+import com.github.flotskiy.search.engine.util.YmlConfigGetter;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -21,13 +19,15 @@ import java.util.concurrent.RecursiveAction;
 public class PageCrawler extends RecursiveAction {
 
     private final String pagePath;
-    private final RepositoriesHolder repoHolder;
     private final Site site;
+    private final CollFiller collFiller;
+    private final StringHelper stringHelper;
 
-    public PageCrawler(String pagePath, RepositoriesHolder repoHolder, Site site) {
+    public PageCrawler(String pagePath, Site site, CollFiller collFiller, StringHelper stringHelper) {
         this.pagePath = pagePath;
-        this.repoHolder = repoHolder;
         this.site = site;
+        this.collFiller = collFiller;
+        this.stringHelper = stringHelper;
     }
 
     @Override
@@ -36,9 +36,9 @@ public class PageCrawler extends RecursiveAction {
         try {
             Thread.sleep(500);
             Connection connection = Jsoup.connect(pagePath)
-                    .userAgent(YmlConfig.getConnectUseragent())
+                    .userAgent(YmlConfigGetter.getConnectUseragent())
 //                    .userAgent("FlotskiySearchBot")
-                    .referrer(YmlConfig.getConnectReferrer())
+                    .referrer(YmlConfigGetter.getConnectReferrer())
                     .ignoreHttpErrors(true);
 
             URL url = new URL(pagePath);
@@ -55,19 +55,19 @@ public class PageCrawler extends RecursiveAction {
                 Elements anchors = document.select("body").select("a");
                 for (Element anchor : anchors) {
                     String href = anchor.absUrl("href");
-                    if (StringHelper.isHrefValid(homePage, href)) {
+                    if (stringHelper.isHrefValid(homePage, href)) {
                         System.out.println("Added to set: " + href);
-                        PageCrawler pageCrawler = new PageCrawler(href, repoHolder, site);
+                        PageCrawler pageCrawler = new PageCrawler(href, site, collFiller, stringHelper);
                         forkJoinPoolPagesList.add(pageCrawler);
                         pageCrawler.fork();
                     }
                 }
             }
 
-            String pathToSave = StringHelper.cutProtocolAndHost(pagePath, homePage);
+            String pathToSave = stringHelper.cutProtocolAndHost(pagePath, homePage);
             Page page = new Page(pathToSave, httpStatusCode, html, site);
-            CollFiller.addPageToPagesList(page);
-            CollFiller.fillInLemmasMapAndTempIndexList(httpStatusCode, html, page, site);
+            collFiller.addPageToPagesList(page);
+            collFiller.fillInLemmasMapAndTempIndexList(httpStatusCode, html, page, site);
 
         } catch (InterruptedException | IOException e) {
             e.printStackTrace();

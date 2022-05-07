@@ -10,7 +10,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-public class YmlConfig {
+public class YmlConfigGetter {
 
     private static final Map<String, String> SITES = new HashMap<>();
     private static final String CONNECT_USERAGENT;
