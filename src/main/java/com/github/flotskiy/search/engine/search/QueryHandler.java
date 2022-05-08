@@ -1,6 +1,5 @@
 package com.github.flotskiy.search.engine.search;
 
-import com.github.flotskiy.search.engine.dataholders.RepoInfoExtractor;
 import com.github.flotskiy.search.engine.dataholders.RepositoriesHolder;
 import com.github.flotskiy.search.engine.model.Page;
 import com.github.flotskiy.search.engine.util.JsoupHelper;
@@ -19,12 +18,10 @@ import java.util.stream.Collectors;
 public class QueryHandler {
 
     private final RepositoriesHolder repositoriesHolder;
-    private final StringHelper stringHelper;
 
     @Autowired
-    public QueryHandler(RepositoriesHolder repositoriesHolder, StringHelper stringHelper) {
+    public QueryHandler(RepositoriesHolder repositoriesHolder) {
         this.repositoriesHolder = repositoriesHolder;
-        this.stringHelper = stringHelper;
     }
 
     public List<SearchResultPage> getSearchResult() {
@@ -78,14 +75,14 @@ public class QueryHandler {
     }
 
     public List<Lemma> getSortedLemmasQueryListWithFrequencyLessThan95() {
-        String query = stringHelper.getInputString();
+        String query = StringHelper.getInputString();
         Set<String> queryWordsSet = Lemmatizer.getLemmasCountMap(query).keySet();
 
         Iterable<Lemma> frequentlyOccurringLemmasIterable =
-                RepoInfoExtractor.getLemmasWithOccurrenceFrequencyPerCentMoreThan95(repositoriesHolder);
+                repositoriesHolder.getLemmasWithOccurrenceFrequencyPerCentMoreThan95();
         Set<Lemma> frequentlyOccurringLemmasSet = Streamable.of(frequentlyOccurringLemmasIterable).toSet();
 
-        Iterable<Lemma> queryLemmasIterable = RepoInfoExtractor.getLemmasFromQueryWords(repositoriesHolder, queryWordsSet);
+        Iterable<Lemma> queryLemmasIterable = repositoriesHolder.getLemmasFromQueryWords(queryWordsSet);
         Set<Lemma> queryLemmasSet = Streamable.of(queryLemmasIterable).toSet();
         Set<Lemma> modifiableTempSet = new HashSet<>(queryLemmasSet);
         modifiableTempSet.removeAll(frequentlyOccurringLemmasSet);
@@ -122,6 +119,6 @@ public class QueryHandler {
         List<Integer> lemmasPositions = new ArrayList<>(filteredMap.keySet());
         lemmasPositions.sort(Integer::compareTo);
 
-        return stringHelper.buildSnippet(textList, lemmasPositions);
+        return StringHelper.buildSnippet(textList, lemmasPositions);
     }
 }

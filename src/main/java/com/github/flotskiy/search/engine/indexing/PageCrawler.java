@@ -21,13 +21,11 @@ public class PageCrawler extends RecursiveAction {
     private final String pagePath;
     private final Site site;
     private final CollFiller collFiller;
-    private final StringHelper stringHelper;
 
-    public PageCrawler(String pagePath, Site site, CollFiller collFiller, StringHelper stringHelper) {
+    public PageCrawler(String pagePath, Site site, CollFiller collFiller) {
         this.pagePath = pagePath;
         this.site = site;
         this.collFiller = collFiller;
-        this.stringHelper = stringHelper;
     }
 
     @Override
@@ -55,16 +53,16 @@ public class PageCrawler extends RecursiveAction {
                 Elements anchors = document.select("body").select("a");
                 for (Element anchor : anchors) {
                     String href = anchor.absUrl("href");
-                    if (stringHelper.isHrefValid(homePage, href)) {
+                    if (StringHelper.isHrefValid(homePage, href, collFiller)) {
                         System.out.println("Added to set: " + href);
-                        PageCrawler pageCrawler = new PageCrawler(href, site, collFiller, stringHelper);
+                        PageCrawler pageCrawler = new PageCrawler(href, site, collFiller);
                         forkJoinPoolPagesList.add(pageCrawler);
                         pageCrawler.fork();
                     }
                 }
             }
 
-            String pathToSave = stringHelper.cutProtocolAndHost(pagePath, homePage);
+            String pathToSave = StringHelper.cutProtocolAndHost(pagePath, homePage);
             Page page = new Page(pathToSave, httpStatusCode, html, site);
             collFiller.addPageToPagesList(page);
             collFiller.fillInLemmasMapAndTempIndexList(httpStatusCode, html, page, site);

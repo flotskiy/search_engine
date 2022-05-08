@@ -1,8 +1,6 @@
 package com.github.flotskiy.search.engine.util;
 
 import com.github.flotskiy.search.engine.indexing.CollFiller;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,19 +11,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-@Component
 public class StringHelper {
-    private final BufferedReader BUFFERED_READER = new BufferedReader(new InputStreamReader(System.in));
-    private final int SNIPPET_BORDER = 5;
+    private static final BufferedReader BUFFERED_READER = new BufferedReader(new InputStreamReader(System.in));
 
-    private final CollFiller collFiller;
+    private static final int SNIPPET_BORDER = 5;
+    private static final String FILE_EXTENSIONS =
+            "pdf|PDF|docx?|DOCX?|xlsx?|XLSX?|pptx?|PPTX?|jpe?g|JPE?G|gif|GIF|png|PNG" +
+            "|mp3|MP3|mp4|MP4|aac|AAC|json|JSON|csv|CSV|exe|EXE|apk|APK|rar|RAR|zip|ZIP" +
+            "|xml|XML|jar|JAR|bin|BIN|svg|SVG|nc|NC|webp|WEBP|m|M";
 
-    @Autowired
-    public StringHelper(CollFiller collFiller) {
-        this.collFiller = collFiller;
-    }
-
-    public String getInputString() {
+    public static String getInputString() {
         String input = "";
         System.out.println("Please type smth:");
         try {
@@ -36,22 +31,20 @@ public class StringHelper {
         return input;
     }
 
-    public String cutProtocolAndHost(String pagePath, String homePage) {
+    public static String cutProtocolAndHost(String pagePath, String homePage) {
         return pagePath.substring(homePage.length());
     }
 
-    public boolean isHrefToPage(String href) {
+    public static boolean isHrefToPage(String href) {
         if (href.matches(".*(#|\\?).*")) {
             return false;
         }
         return !href.matches(
-                ".*\\.(pdf|PDF|docx?|DOCX?|xlsx?|XLSX?|pptx?|PPTX?|jpe?g|JPE?G|gif|GIF|png|PNG" +
-                        "|mp3|MP3|mp4|MP4|aac|AAC|json|JSON|csv|CSV|exe|EXE|apk|APK|rar|RAR|zip|ZIP" +
-                        "|xml|XML|jar|JAR|bin|BIN|svg|SVG|nc|NC|webp|WEBP|m|M)/?"
+                ".*\\.(" + FILE_EXTENSIONS + ")/?"
         );
     }
 
-    public boolean isHrefValid(String homePage, String href) {
+    public static boolean isHrefValid(String homePage, String href, CollFiller collFiller) {
         return href.startsWith(homePage) &&
                 isHrefToPage(href) &&
                 !collFiller.isPageAdded(href) &&
@@ -59,7 +52,7 @@ public class StringHelper {
                 !href.equals(homePage + "/");
     }
 
-    public String buildSnippet(List<String> textList, List<Integer> lemmasPositions) {
+    public static String buildSnippet(List<String> textList, List<Integer> lemmasPositions) {
         if (lemmasPositions.size() == 0) {
             return "";
         }
@@ -90,11 +83,11 @@ public class StringHelper {
         return builder.toString();
     }
 
-    private boolean isLastEntry(Map.Entry<Integer, Integer> entry, List<Integer> lemmasPositions, int border) {
+    private static boolean isLastEntry(Map.Entry<Integer, Integer> entry, List<Integer> lemmasPositions, int border) {
         return (entry.getValue() - border) == lemmasPositions.get(lemmasPositions.size() - 1);
     }
 
-    private void buildStringBuilder(
+    private static void buildStringBuilder(
             StringBuilder builder,
             List<String> textList,
             List<Integer> lemmasPositions,
@@ -116,7 +109,7 @@ public class StringHelper {
         }
     }
 
-    public String getHomePage(String urlString) {
+    public static String getHomePage(String urlString) {
         URL url = null;
         try {
             url = new URL(urlString);

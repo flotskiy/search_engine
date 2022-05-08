@@ -21,6 +21,7 @@ public class RepoFiller {
     }
 
     public void fillInFields() {
+        repositoriesHolder.truncateFields();
         repositoriesHolder.getFieldRepository().save(new Field("title", "title", 1.0f));
         repositoriesHolder.getFieldRepository().save(new Field("body", "body", 0.8f));
     }
@@ -58,7 +59,6 @@ public class RepoFiller {
             indexList.add(new Index(tempIndex.getPage(), lemma, tempIndex.getLemmaRank()));
         }
 
-        System.out.println("tempIndexList.size() - " + collectionsHolder.getTempIndexList().size());
         System.out.println("indexList.size() - " + indexList.size());
         repositoriesHolder.getIndexRepository().saveAll(indexList);
         collectionsHolder.getTempIndexList().clear();

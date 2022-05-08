@@ -13,23 +13,22 @@ import java.util.concurrent.ForkJoinPool;
 
 @Component
 public class PageCrawlerStarter {
+
     private static final Map<String, String> SOURCES_MAP = YmlConfigGetter.getSites();
+
     private final CollectionsHolder collectionsHolder;
     private final RepoFiller repoFiller;
     private final CollFiller collFiller;
-    private final StringHelper stringHelper;
 
     @Autowired
     public PageCrawlerStarter(
             CollectionsHolder collectionsHolder,
             RepoFiller repoFiller,
-            CollFiller collFiller,
-            StringHelper stringHelper
+            CollFiller collFiller
     ) {
         this.collectionsHolder = collectionsHolder;
         this.repoFiller = repoFiller;
         this.collFiller = collFiller;
-        this.stringHelper = stringHelper;
     }
 
     public void makeCrawling(RepositoriesHolder repositoriesHolder) {
@@ -44,8 +43,8 @@ public class PageCrawlerStarter {
         } else {
             for (Site site : collectionsHolder.getSiteList()) {
                 repoFiller.deletePreviouslyIndexedSiteByName(site.getName(), site.getId());
-                String homePage = stringHelper.getHomePage(site.getUrl());
-                PageCrawler pageCrawler = new PageCrawler(homePage, site, collFiller, stringHelper);
+                String homePage = StringHelper.getHomePage(site.getUrl());
+                PageCrawler pageCrawler = new PageCrawler(homePage, site, collFiller);
                 forkJoinPool.invoke(pageCrawler);
                 repoFiller.fillInPages();
                 repoFiller.fillInLemmas();
