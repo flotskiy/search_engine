@@ -3,11 +3,13 @@ package com.github.flotskiy.search.engine.indexing;
 import com.github.flotskiy.search.engine.dataholders.CollectionsHolder;
 import com.github.flotskiy.search.engine.dataholders.RepositoriesHolder;
 import com.github.flotskiy.search.engine.model.Site;
+import com.github.flotskiy.search.engine.model.Status;
 import com.github.flotskiy.search.engine.util.StringHelper;
 import com.github.flotskiy.search.engine.util.YmlConfigGetter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 
@@ -31,26 +33,39 @@ public class PageCrawlerStarter {
         this.collFiller = collFiller;
     }
 
-    public void makeCrawling(RepositoriesHolder repositoriesHolder) {
+    public void startCrawling(RepositoriesHolder repositoriesHolder) {
+        long start = System.currentTimeMillis();
         collFiller.fillInSelectorsAndWeigh(repositoriesHolder);
         collFiller.fillInSiteList(SOURCES_MAP);
-        repoFiller.fillInSites();
+        repoFiller.fillInFields();
 
         ForkJoinPool forkJoinPool = new ForkJoinPool();
 
-        if (collectionsHolder.getSiteList().isEmpty()) {
+        if (SOURCES_MAP.size() < 1) {
             System.out.println("No sites specified!");
         } else {
-            for (Site site : collectionsHolder.getSiteList()) {
-                repoFiller.deletePreviouslyIndexedSiteByName(site.getName(), site.getId());
-                String homePage = StringHelper.getHomePage(site.getUrl());
+            for (Site site : new ArrayList<>(collectionsHolder.getSiteList())) {
+                String homePage = makeActionsBeforeForkJoinPoolStarted(site);
                 PageCrawler pageCrawler = new PageCrawler(homePage, site, collFiller);
                 forkJoinPool.invoke(pageCrawler);
-                repoFiller.fillInPages();
-                repoFiller.fillInLemmas();
-                repoFiller.fillInSearchIndex();
-                repoFiller.markSiteAsIndexed(site);
+                completeActionsAfterForkJoinPoolFinished(site);
             }
         }
+        System.out.println("Duration of processing: " + (System.currentTimeMillis() - start) / 1000 + " s");
+    }
+
+    private String makeActionsBeforeForkJoinPoolStarted(Site site) {
+        repoFiller.changeSiteStatus(site, Status.INDEXING);
+        repoFiller.deletePreviouslyIndexedSiteByName(site.getName(), site.getId());
+        repoFiller.saveSite(site);
+        return StringHelper.getHomePage(site.getUrl());
+    }
+
+    private void completeActionsAfterForkJoinPoolFinished(Site site) {
+        repoFiller.fillInPages();
+        repoFiller.fillInLemmas();
+        repoFiller.fillInSearchIndex();
+        repoFiller.changeSiteStatus(site, Status.INDEXED);
+        collFiller.clearCollections();
     }
 }

@@ -2,18 +2,14 @@ package com.github.flotskiy.search.engine.indexing;
 
 import com.github.flotskiy.search.engine.dataholders.CollectionsHolder;
 import com.github.flotskiy.search.engine.dataholders.RepositoriesHolder;
-import com.github.flotskiy.search.engine.model.Page;
-import com.github.flotskiy.search.engine.model.Site;
-import com.github.flotskiy.search.engine.model.Status;
+import com.github.flotskiy.search.engine.model.*;
 import com.github.flotskiy.search.engine.util.JsoupHelper;
 import com.github.flotskiy.search.engine.lemmatizer.Lemmatizer;
-import com.github.flotskiy.search.engine.model.Field;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -96,5 +92,14 @@ public class CollFiller {
                 collectionsHolder.getSelectorsAndWeight().get("title") +
                 bodyLemmasCount.getOrDefault(lemma, 0) *
                 collectionsHolder.getSelectorsAndWeight().get("body");
+    }
+
+    public void clearCollections() {
+        collectionsHolder.getSiteList().clear();
+        collectionsHolder.getWebpagesPath().clear();
+        collectionsHolder.getSiteLemmaMap().clear();
+        collectionsHolder.getPageList().clear();
+        collectionsHolder.getTempIndexList().clear();
+        collectionsHolder.getLemmaList().clear();
     }
 }

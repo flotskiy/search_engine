@@ -30,6 +30,10 @@ public class RepoFiller {
         repositoriesHolder.getSiteRepository().saveAll(collectionsHolder.getSiteList());
     }
 
+    public void saveSite(Site site) {
+        repositoriesHolder.getSiteRepository().save(site);
+    }
+
     public void fillInPages() {
         repositoriesHolder.getPageRepository().saveAll(collectionsHolder.getPageList());
         collectionsHolder.getPageList().clear();
@@ -68,9 +72,7 @@ public class RepoFiller {
         repositoriesHolder.getSiteRepository().deletePreviouslyIndexedSiteByName(siteName, siteId);
     }
 
-    public void markSiteAsIndexed(Site site) {
-        site.setStatus(Status.INDEXED);
-        site.setStatusTime(new Date());
-        repositoriesHolder.getSiteRepository().save(site);
+    public void changeSiteStatus(Site site, Status status) {
+        repositoriesHolder.changeSiteStatus(site.getId(), status);
     }
 }
