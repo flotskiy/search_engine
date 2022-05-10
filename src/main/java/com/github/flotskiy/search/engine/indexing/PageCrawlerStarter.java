@@ -1,71 +1,104 @@
 package com.github.flotskiy.search.engine.indexing;
 
 import com.github.flotskiy.search.engine.dataholders.CollectionsHolder;
-import com.github.flotskiy.search.engine.dataholders.RepositoriesHolder;
 import com.github.flotskiy.search.engine.model.Site;
 import com.github.flotskiy.search.engine.model.Status;
 import com.github.flotskiy.search.engine.util.StringHelper;
 import com.github.flotskiy.search.engine.util.YmlConfigGetter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-@Component
 public class PageCrawlerStarter {
 
-    private static final Map<String, String> SOURCES_MAP = YmlConfigGetter.getSites();
+    private static final String INTERRUPTED_BY_USER_MESSAGE = "Indexing stopped by user";
+
+    private final AtomicBoolean isStopped = new AtomicBoolean(false);
+    private final ForkJoinPool forkJoinPool = new ForkJoinPool();
+
+    private final Map<String, String> SOURCES_MAP = YmlConfigGetter.getSites();
 
     private final CollectionsHolder collectionsHolder;
     private final RepoFiller repoFiller;
     private final CollFiller collFiller;
 
-    @Autowired
-    public PageCrawlerStarter(
-            CollectionsHolder collectionsHolder,
-            RepoFiller repoFiller,
-            CollFiller collFiller
-    ) {
+    public PageCrawlerStarter(CollectionsHolder collectionsHolder, RepoFiller repoFiller, CollFiller collFiller) {
         this.collectionsHolder = collectionsHolder;
         this.repoFiller = repoFiller;
         this.collFiller = collFiller;
     }
 
-    public void startCrawling(RepositoriesHolder repositoriesHolder) {
+    public void startCrawling() {
+        if (SOURCES_MAP.size() < 1) {
+            System.out.println("No sites specified!");
+        }
+
         long start = System.currentTimeMillis();
-        collFiller.fillInSelectorsAndWeigh(repositoriesHolder);
+        collFiller.fillInSelectorsAndWeigh();
         collFiller.fillInSiteList(SOURCES_MAP);
         repoFiller.fillInFields();
 
-        ForkJoinPool forkJoinPool = new ForkJoinPool();
-
-        if (SOURCES_MAP.size() < 1) {
-            System.out.println("No sites specified!");
-        } else {
-            for (Site site : new ArrayList<>(collectionsHolder.getSiteList())) {
-                String homePage = makeActionsBeforeForkJoinPoolStarted(site);
+        for (Site site : new ArrayList<>(collectionsHolder.getSiteList())) {
+            String homePage = makeActionsBeforeForkJoinPoolStarted(site);
+            if (isStopped.get()) {
+                fixErrorAndClearCollections(site);
+                return;
+            }
+            try {
                 PageCrawler pageCrawler = new PageCrawler(homePage, site, collFiller);
                 forkJoinPool.invoke(pageCrawler);
+                if (isStopped.get()) {
+                    fixErrorAndClearCollections(site);
+                    return;
+                }
                 completeActionsAfterForkJoinPoolFinished(site);
+            } catch (CancellationException ce) {
+                System.out.println("CancellationException in PageCrawlerStarter");
+                fixErrorAndClearCollections(site);
+                return;
+            }
+            if (isStopped.get()) {
+                fixErrorAndClearCollections(site);
+                return;
             }
         }
+        isStopped.set(true);
         System.out.println("Duration of processing: " + (System.currentTimeMillis() - start) / 1000 + " s");
     }
 
-    private String makeActionsBeforeForkJoinPoolStarted(Site site) {
-        repoFiller.changeSiteStatus(site, Status.INDEXING);
+    public void stopIndexing() {
+        isStopped.set(true);
+        forkJoinPool.shutdownNow();
+    }
+
+    public void fixErrorAndClearCollections(Site site) {
+        repoFiller.setFailedStatus(site, INTERRUPTED_BY_USER_MESSAGE);
+        collFiller.clearCollections();
+        collFiller.clearSelectorsAndWeightCollection();
+    }
+
+    private String makeActionsBeforeForkJoinPoolStarted(Site site){
+        repoFiller.setSiteStatus(site, Status.INDEXING);
         repoFiller.deletePreviouslyIndexedSiteByName(site.getName(), site.getId());
         repoFiller.saveSite(site);
         return StringHelper.getHomePage(site.getUrl());
     }
 
-    private void completeActionsAfterForkJoinPoolFinished(Site site) {
+    private void completeActionsAfterForkJoinPoolFinished(Site site){
         repoFiller.fillInPages();
         repoFiller.fillInLemmas();
         repoFiller.fillInSearchIndex();
-        repoFiller.changeSiteStatus(site, Status.INDEXED);
+        if (isStopped.get()) {
+            return;
+        }
+        repoFiller.setSiteStatus(site, Status.INDEXED);
         collFiller.clearCollections();
+    }
+
+    public boolean isStopped() {
+        return isStopped.get();
     }
 }

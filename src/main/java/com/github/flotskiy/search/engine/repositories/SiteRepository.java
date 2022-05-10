@@ -24,7 +24,15 @@ public interface SiteRepository extends CrudRepository<Site, Integer> {
     @Transactional
     @Modifying
     @Query(value = "UPDATE Sites SET status = :status, status_time = :statusTime WHERE id = :id", nativeQuery = true)
-    void changeSiteStatus(@Param("id") int id, @Param("status") String status, @Param("statusTime") Date date);
+    void setSiteStatus(@Param("id") int id, @Param("status") String status, @Param("statusTime") Date date);
+
+    @Transactional
+    @Modifying
+    @Query(
+            value = "UPDATE Sites SET last_error = :error, status = 'FAILED', status_time = :statusTime WHERE id = :id",
+            nativeQuery = true
+    )
+    void setFailedStatus(@Param("id") int id, @Param("statusTime") Date date, @Param("error") String error);
 
     @Query(value = "SELECT * FROM Sites", nativeQuery = true)
     Iterable<Site> getAllSites();

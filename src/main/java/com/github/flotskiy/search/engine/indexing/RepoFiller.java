@@ -72,7 +72,11 @@ public class RepoFiller {
         repositoriesHolder.getSiteRepository().deletePreviouslyIndexedSiteByName(siteName, siteId);
     }
 
-    public void changeSiteStatus(Site site, Status status) {
-        repositoriesHolder.changeSiteStatus(site.getId(), status);
+    public void setSiteStatus(Site site, Status status) {
+        repositoriesHolder.setSiteStatus(site.getId(), status);
+    }
+
+    public void setFailedStatus(Site site, String error) {
+        repositoriesHolder.setFailedStatus(site.getId(), error);
     }
 }

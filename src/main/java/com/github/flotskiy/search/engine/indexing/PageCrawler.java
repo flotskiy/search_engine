@@ -67,8 +67,10 @@ public class PageCrawler extends RecursiveAction {
             collFiller.addPageToPagesList(page);
             collFiller.fillInLemmasMapAndTempIndexList(httpStatusCode, html, page, site);
 
-        } catch (InterruptedException | IOException e) {
-            e.printStackTrace();
+        } catch (InterruptedException ie) {
+            System.out.println("InterruptedException in PageCrawler - Thread: " + Thread.currentThread().getName());
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
         }
 
         for (PageCrawler pageCrawler : forkJoinPoolPagesList) {

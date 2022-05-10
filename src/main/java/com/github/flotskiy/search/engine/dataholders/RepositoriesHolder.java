@@ -52,7 +52,11 @@ public class RepositoriesHolder {
         return siteIterable.iterator().hasNext();
     }
 
-    public void changeSiteStatus(int id, Status status) {
-        siteRepository.changeSiteStatus(id, status.toString(), new Date());
+    public void setSiteStatus(int id, Status status) {
+        siteRepository.setSiteStatus(id, status.toString(), new Date());
+    }
+
+    public void setFailedStatus(int id, String error) {
+        siteRepository.setFailedStatus(id, new Date(), error);
     }
 }

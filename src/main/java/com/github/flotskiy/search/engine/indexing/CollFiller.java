@@ -17,13 +17,15 @@ import java.util.stream.Stream;
 public class CollFiller {
 
     private final CollectionsHolder collectionsHolder;
+    private final RepositoriesHolder repositoriesHolder;
 
     @Autowired
-    public CollFiller(CollectionsHolder collectionsHolder) {
+    public CollFiller(CollectionsHolder collectionsHolder, RepositoriesHolder repositoriesHolder) {
         this.collectionsHolder = collectionsHolder;
+        this.repositoriesHolder = repositoriesHolder;
     }
 
-    public void fillInSelectorsAndWeigh(RepositoriesHolder repositoriesHolder) {
+    public void fillInSelectorsAndWeigh() {
         Iterable<Field> fieldIterable = repositoriesHolder.getFieldRepository().findAll();
         for (Field field : fieldIterable) {
             collectionsHolder.getSelectorsAndWeight().put(field.getSelector(), field.getWeight());
@@ -31,8 +33,18 @@ public class CollFiller {
     }
 
     public void fillInSiteList(Map<String, String> SOURCES_MAP) {
+        Iterable<Site> sitesInRepository = repositoriesHolder.getSiteRepository().getAllSites();
+
         for (Map.Entry<String, String> entry : SOURCES_MAP.entrySet()) {
             Site site = new Site(Status.INDEXING, new Date(), entry.getValue(), entry.getKey());
+            for (Site siteFromRepository : sitesInRepository) {
+                if (site.getName().equals(siteFromRepository.getName())) {
+                    repositoriesHolder.getSiteRepository().deletePreviouslyIndexedSiteByName(
+                            siteFromRepository.getName(), siteFromRepository.getId()
+                    );
+                    break;
+                }
+            }
             collectionsHolder.getSiteList().add(site);
         }
     }
@@ -101,5 +113,9 @@ public class CollFiller {
         collectionsHolder.getPageList().clear();
         collectionsHolder.getTempIndexList().clear();
         collectionsHolder.getLemmaList().clear();
+    }
+
+    public void clearSelectorsAndWeightCollection() {
+        collectionsHolder.getSelectorsAndWeight().clear();
     }
 }
