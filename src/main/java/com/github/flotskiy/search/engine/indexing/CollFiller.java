@@ -36,7 +36,7 @@ public class CollFiller {
         Iterable<Site> sitesInRepository = repositoriesHolder.getSiteRepository().getAllSites();
 
         for (Map.Entry<String, String> entry : SOURCES_MAP.entrySet()) {
-            Site site = new Site(Status.INDEXING, new Date(), entry.getValue(), entry.getKey());
+            Site site = new Site(Status.INDEXING, "no errors", new Date(), entry.getValue(), entry.getKey());
             for (Site siteFromRepository : sitesInRepository) {
                 if (site.getName().equals(siteFromRepository.getName())) {
                     repositoriesHolder.getSiteRepository().deletePreviouslyIndexedSiteByName(

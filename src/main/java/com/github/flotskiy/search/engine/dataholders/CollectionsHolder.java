@@ -1,9 +1,9 @@
 package com.github.flotskiy.search.engine.dataholders;
 
-import com.github.flotskiy.search.engine.indexing.SiteLemmaPair;
+import com.github.flotskiy.search.engine.model.SiteLemmaPair;
 import com.github.flotskiy.search.engine.model.Lemma;
 import com.github.flotskiy.search.engine.model.Page;
-import com.github.flotskiy.search.engine.indexing.TempIndex;
+import com.github.flotskiy.search.engine.model.TempIndex;
 import com.github.flotskiy.search.engine.model.Site;
 import lombok.Getter;
 import org.springframework.stereotype.Component;

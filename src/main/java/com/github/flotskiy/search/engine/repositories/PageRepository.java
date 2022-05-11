@@ -18,4 +18,10 @@ public interface PageRepository extends CrudRepository<Page, Integer> {
             nativeQuery = true
     )
     Iterable<Page> getPagesByLemmaId(@Param("lemmaId") int lemmaId);
+
+    @Query(value = "SELECT COUNT(*) FROM Pages", nativeQuery = true)
+    int getNumberOfPages();
+
+    @Query(value = "SELECT COUNT(*) FROM Pages WHERE site_id = :siteId", nativeQuery = true)
+    int getNumberOfPagesOnSite(@Param("siteId") int siteId);
 }

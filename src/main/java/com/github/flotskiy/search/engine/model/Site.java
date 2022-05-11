@@ -1,8 +1,6 @@
 package com.github.flotskiy.search.engine.model;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -41,8 +39,9 @@ public class Site {
     @OneToMany(mappedBy = "siteId", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Lemma> lemmas;
 
-    public Site(Status status, Date statusTime, String url, String name) {
+    public Site(Status status, String lastError, Date statusTime, String url, String name) {
         this.status = status;
+        this.lastError = lastError;
         this.statusTime = statusTime;
         this.url = url;
         this.name = name;

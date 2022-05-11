@@ -11,16 +11,15 @@ import java.util.Collection;
 @Repository
 public interface LemmaRepository extends CrudRepository<Lemma, Integer> {
 
-    @Query(
-            value = "SELECT * FROM Lemmas WHERE frequency > (SELECT COUNT(*) * 95 / 100 FROM Pages)",
-            nativeQuery = true
-    )
+    @Query(value = "SELECT * FROM Lemmas WHERE frequency > (SELECT COUNT(*) * 95 / 100 FROM Pages)", nativeQuery = true)
     Iterable<Lemma> getLemmasWithOccurrenceFrequencyPerCentMoreThan95();
 
-
-    @Query(
-            value = "SELECT * FROM Lemmas WHERE lemma IN :lemmasList",
-            nativeQuery = true
-    )
+    @Query(value = "SELECT * FROM Lemmas WHERE lemma IN :lemmasList", nativeQuery = true)
     Iterable<Lemma> getLemmasWithQueryWords(@Param("lemmasList") Collection<String> lemmasList);
+
+    @Query(value = "SELECT COUNT(*) FROM Lemmas", nativeQuery = true)
+    int getNumberOfLemmas();
+
+    @Query(value = "SELECT COUNT(*) FROM Lemmas WHERE site_id = :siteId", nativeQuery = true)
+    int getNumberOfLemmasOnSite(@Param("siteId") int siteId);
 }

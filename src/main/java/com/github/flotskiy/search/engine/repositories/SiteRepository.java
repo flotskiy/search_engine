@@ -36,4 +36,7 @@ public interface SiteRepository extends CrudRepository<Site, Integer> {
 
     @Query(value = "SELECT * FROM Sites", nativeQuery = true)
     Iterable<Site> getAllSites();
+
+    @Query(value = "SELECT COUNT(*) FROM Sites", nativeQuery = true)
+    int getNumberOfSites();
 }

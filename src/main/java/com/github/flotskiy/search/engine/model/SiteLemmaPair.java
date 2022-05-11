@@ -1,6 +1,5 @@
-package com.github.flotskiy.search.engine.indexing;
+package com.github.flotskiy.search.engine.model;
 
-import com.github.flotskiy.search.engine.model.Site;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
