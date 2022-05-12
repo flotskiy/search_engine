@@ -22,4 +22,7 @@ public interface LemmaRepository extends CrudRepository<Lemma, Integer> {
 
     @Query(value = "SELECT COUNT(*) FROM Lemmas WHERE site_id = :siteId", nativeQuery = true)
     int getNumberOfLemmasOnSite(@Param("siteId") int siteId);
+
+    @Query(value = "SELECT * FROM Lemmas WHERE site_id = :siteId", nativeQuery = true)
+    Iterable<Lemma> getAllLemmasFromSite(@Param("siteId") int siteId);
 }

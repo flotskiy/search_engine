@@ -19,6 +19,9 @@ public interface PageRepository extends CrudRepository<Page, Integer> {
     )
     Iterable<Page> getPagesByLemmaId(@Param("lemmaId") int lemmaId);
 
+    @Query(value = "SELECT * FROM Pages WHERE path = :path", nativeQuery = true)
+    Page getPageByPath(@Param("path") String path);
+
     @Query(value = "SELECT COUNT(*) FROM Pages", nativeQuery = true)
     int getNumberOfPages();
 

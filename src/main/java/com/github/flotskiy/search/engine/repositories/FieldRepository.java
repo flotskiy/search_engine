@@ -14,4 +14,7 @@ public interface FieldRepository extends CrudRepository<Field, Integer> {
     @Modifying
     @Query(value = "TRUNCATE Fields", nativeQuery = true)
     void truncateFields();
+
+    @Query(value = "SELECT * FROM Fields", nativeQuery = true)
+    Iterable<Field> getAllFields();
 }

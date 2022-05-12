@@ -6,6 +6,9 @@ import com.github.flotskiy.search.engine.model.Status;
 import com.github.flotskiy.search.engine.util.StringHelper;
 import com.github.flotskiy.search.engine.util.YmlConfigGetter;
 
+import javax.net.ssl.SSLHandshakeException;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.CertificateExpiredException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
@@ -15,6 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class PageCrawlerStarter {
 
     private static final String INTERRUPTED_BY_USER_MESSAGE = "Indexing stopped by user";
+    private static final String CERTIFICATE_ERROR = "Site's certificate validity check failed";
 
     private final AtomicBoolean isStopped = new AtomicBoolean(false);
     private final ForkJoinPool forkJoinPool = new ForkJoinPool();
@@ -43,25 +47,21 @@ public class PageCrawlerStarter {
 
         for (Site site : new ArrayList<>(collectionsHolder.getSiteList())) {
             String homePage = makeActionsBeforeForkJoinPoolStarted(site);
-            if (isStopped.get()) {
-                fixErrorAndClearCollections(site);
-                return;
-            }
             try {
                 PageCrawler pageCrawler = new PageCrawler(homePage, site, collFiller);
                 forkJoinPool.invoke(pageCrawler);
-                if (isStopped.get()) {
-                    fixErrorAndClearCollections(site);
-                    return;
-                }
                 completeActionsAfterForkJoinPoolFinished(site);
             } catch (CancellationException ce) {
                 System.out.println("CancellationException in PageCrawlerStarter");
-                fixErrorAndClearCollections(site);
+                fixErrorAndClearCollections(site, INTERRUPTED_BY_USER_MESSAGE);
+                return;
+            } catch (CertificateExpiredException | SSLHandshakeException | CertPathValidatorException certEx) {
+                System.out.println("CertifException");
+                fixErrorAndClearCollections(site, CERTIFICATE_ERROR);
                 return;
             }
             if (isStopped.get()) {
-                fixErrorAndClearCollections(site);
+                fixErrorAndClearCollections(site, INTERRUPTED_BY_USER_MESSAGE);
                 return;
             }
         }
@@ -74,8 +74,8 @@ public class PageCrawlerStarter {
         forkJoinPool.shutdownNow();
     }
 
-    public void fixErrorAndClearCollections(Site site) {
-        repoFiller.setFailedStatus(site, INTERRUPTED_BY_USER_MESSAGE);
+    public void fixErrorAndClearCollections(Site site, String message) {
+        repoFiller.setFailedStatus(site, message);
         collFiller.clearCollections();
         collFiller.clearSelectorsAndWeightCollection();
     }

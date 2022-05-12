@@ -2,16 +2,19 @@ package com.github.flotskiy.search.engine.indexing;
 
 import com.github.flotskiy.search.engine.model.Page;
 import com.github.flotskiy.search.engine.model.Site;
+import com.github.flotskiy.search.engine.util.JsoupHelper;
 import com.github.flotskiy.search.engine.util.StringHelper;
-import com.github.flotskiy.search.engine.util.YmlConfigGetter;
+import lombok.SneakyThrows;
 import org.jsoup.Connection;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.net.URL;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.CertificateExpiredException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.RecursiveAction;
@@ -22,22 +25,20 @@ public class PageCrawler extends RecursiveAction {
     private final Site site;
     private final CollFiller collFiller;
 
-    public PageCrawler(String pagePath, Site site, CollFiller collFiller) {
+    public PageCrawler(String pagePath, Site site, CollFiller collFiller)
+            throws CertificateExpiredException, SSLHandshakeException, CertPathValidatorException {
         this.pagePath = pagePath;
         this.site = site;
         this.collFiller = collFiller;
     }
 
+    @SneakyThrows
     @Override
     protected void compute() {
         List<PageCrawler> forkJoinPoolPagesList = new ArrayList<>();
         try {
             Thread.sleep(500);
-            Connection connection = Jsoup.connect(pagePath)
-                    .userAgent(YmlConfigGetter.getConnectUseragent())
-//                    .userAgent("FlotskiySearchBot")
-                    .referrer(YmlConfigGetter.getConnectReferrer())
-                    .ignoreHttpErrors(true);
+            Connection connection = JsoupHelper.getConnection(pagePath);
 
             URL url = new URL(pagePath);
             String homePage = url.getProtocol() + "://" + url.getHost();
@@ -54,7 +55,6 @@ public class PageCrawler extends RecursiveAction {
                 for (Element anchor : anchors) {
                     String href = anchor.absUrl("href");
                     if (StringHelper.isHrefValid(homePage, href, collFiller)) {
-                        System.out.println("Added to set: " + href);
                         PageCrawler pageCrawler = new PageCrawler(href, site, collFiller);
                         forkJoinPoolPagesList.add(pageCrawler);
                         pageCrawler.fork();
@@ -70,7 +70,8 @@ public class PageCrawler extends RecursiveAction {
         } catch (InterruptedException ie) {
             System.out.println("InterruptedException in PageCrawler - Thread: " + Thread.currentThread().getName());
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            System.out.println("IOEx");
+            throw ioe;
         }
 
         for (PageCrawler pageCrawler : forkJoinPoolPagesList) {
