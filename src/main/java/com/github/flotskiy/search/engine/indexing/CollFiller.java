@@ -55,7 +55,6 @@ public class CollFiller {
         }
 
         Document htmlDocument = JsoupHelper.getDocument(html);
-
         String title = htmlDocument.title();
         System.out.println(title);
         Map<String, Integer> titleLemmasCount = Lemmatizer.getLemmasCountMap(title);
@@ -66,7 +65,6 @@ public class CollFiller {
         Map<String, Integer> uniqueLemmasInTitleAndBody = Stream
                 .concat(titleLemmasCount.entrySet().stream(), bodyLemmasCount.entrySet().stream())
                 .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.summingInt(Map.Entry::getValue)));
-        System.out.println("Все леммы: " + uniqueLemmasInTitleAndBody);
 
         for (String lemma : uniqueLemmasInTitleAndBody.keySet()) {
             SiteLemmaPair siteLemmaPair = new SiteLemmaPair(lemma, site);
@@ -87,7 +85,6 @@ public class CollFiller {
             collectionsHolder.getWebpagesPath().add(pagePath);
             return false;
         }
-        System.out.println("\tPage was added before: " + pagePath);
         return true;
     }
 

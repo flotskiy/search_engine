@@ -46,8 +46,8 @@ public class PageCrawlerStarter {
         repoFiller.fillInFields();
 
         for (Site site : new ArrayList<>(collectionsHolder.getSiteList())) {
-            String homePage = makeActionsBeforeForkJoinPoolStarted(site);
             try {
+                String homePage = makeActionsBeforeForkJoinPoolStarted(site);
                 PageCrawler pageCrawler = new PageCrawler(homePage, site, collFiller);
                 forkJoinPool.invoke(pageCrawler);
                 completeActionsAfterForkJoinPoolFinished(site);

@@ -55,6 +55,7 @@ public class PageCrawler extends RecursiveAction {
                 for (Element anchor : anchors) {
                     String href = anchor.absUrl("href");
                     if (StringHelper.isHrefValid(homePage, href, collFiller)) {
+                        System.out.println("Added to set: " + href);
                         PageCrawler pageCrawler = new PageCrawler(href, site, collFiller);
                         forkJoinPoolPagesList.add(pageCrawler);
                         pageCrawler.fork();

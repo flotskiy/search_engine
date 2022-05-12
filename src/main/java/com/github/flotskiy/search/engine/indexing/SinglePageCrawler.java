@@ -85,7 +85,6 @@ public class SinglePageCrawler {
         Map<String, Integer> uniqueLemmasInTitleAndBody = Stream
                 .concat(titleLemmasCount.entrySet().stream(), bodyLemmasCount.entrySet().stream())
                 .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.summingInt(Map.Entry::getValue)));
-        System.out.println("All lemmas: " + uniqueLemmasInTitleAndBody);
 
         Iterable<Lemma> lemmaIterableFromDb = repositoriesHolder.getLemmaRepository().getAllLemmasFromSite(site.getId());
         Map<String, Lemma> tempMapWithLemmas = new HashMap<>();
