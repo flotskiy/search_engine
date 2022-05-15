@@ -1,4 +1,4 @@
-package com.github.flotskiy.search.engine.indexing;
+package com.github.flotskiy.search.engine.service.indexing.all;
 
 import com.github.flotskiy.search.engine.dataholders.CollectionsHolder;
 import com.github.flotskiy.search.engine.dataholders.RepositoriesHolder;

@@ -1,7 +1,7 @@
-package com.github.flotskiy.search.engine.indexing;
+package com.github.flotskiy.search.engine.service.indexing.one;
 
 import com.github.flotskiy.search.engine.dataholders.RepositoriesHolder;
-import com.github.flotskiy.search.engine.lemmatizer.Lemmatizer;
+import com.github.flotskiy.search.engine.service.lemmatizer.Lemmatizer;
 import com.github.flotskiy.search.engine.model.*;
 import com.github.flotskiy.search.engine.util.JsoupHelper;
 import com.github.flotskiy.search.engine.util.StringHelper;

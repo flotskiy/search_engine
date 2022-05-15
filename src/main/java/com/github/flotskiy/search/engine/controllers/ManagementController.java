@@ -1,10 +1,10 @@
 package com.github.flotskiy.search.engine.controllers;
 
 import com.github.flotskiy.search.engine.dataholders.CollectionsHolder;
-import com.github.flotskiy.search.engine.indexing.CollFiller;
-import com.github.flotskiy.search.engine.indexing.PageCrawlerStarter;
-import com.github.flotskiy.search.engine.indexing.RepoFiller;
-import com.github.flotskiy.search.engine.indexing.SinglePageCrawler;
+import com.github.flotskiy.search.engine.service.indexing.all.CollFiller;
+import com.github.flotskiy.search.engine.service.indexing.all.PageCrawlerStarter;
+import com.github.flotskiy.search.engine.service.indexing.all.RepoFiller;
+import com.github.flotskiy.search.engine.service.indexing.one.SinglePageCrawler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

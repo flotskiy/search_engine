@@ -1,10 +1,10 @@
-package com.github.flotskiy.search.engine.indexing;
+package com.github.flotskiy.search.engine.service.indexing.all;
 
 import com.github.flotskiy.search.engine.dataholders.CollectionsHolder;
 import com.github.flotskiy.search.engine.dataholders.RepositoriesHolder;
 import com.github.flotskiy.search.engine.model.*;
 import com.github.flotskiy.search.engine.util.JsoupHelper;
-import com.github.flotskiy.search.engine.lemmatizer.Lemmatizer;
+import com.github.flotskiy.search.engine.service.lemmatizer.Lemmatizer;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

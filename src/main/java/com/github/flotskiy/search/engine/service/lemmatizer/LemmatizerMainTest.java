@@ -1,4 +1,4 @@
-package com.github.flotskiy.search.engine.lemmatizer;
+package com.github.flotskiy.search.engine.service.lemmatizer;
 
 import com.github.flotskiy.search.engine.util.StringHelper;
 

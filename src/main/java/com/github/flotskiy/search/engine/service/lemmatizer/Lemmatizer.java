@@ -1,4 +1,4 @@
-package com.github.flotskiy.search.engine.lemmatizer;
+package com.github.flotskiy.search.engine.service.lemmatizer;
 
 import org.apache.lucene.morphology.LuceneMorphology;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;

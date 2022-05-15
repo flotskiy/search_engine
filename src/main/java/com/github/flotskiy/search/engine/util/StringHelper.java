@@ -1,6 +1,6 @@
 package com.github.flotskiy.search.engine.util;
 
-import com.github.flotskiy.search.engine.indexing.CollFiller;
+import com.github.flotskiy.search.engine.service.indexing.all.CollFiller;
 
 import java.io.BufferedReader;
 import java.io.IOException;
