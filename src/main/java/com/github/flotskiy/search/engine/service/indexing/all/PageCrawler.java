@@ -12,6 +12,7 @@ import org.jsoup.select.Elements;
 
 import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.URL;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.CertificateExpiredException;
@@ -26,7 +27,7 @@ public class PageCrawler extends RecursiveAction {
     private final CollFiller collFiller;
 
     public PageCrawler(String pagePath, Site site, CollFiller collFiller)
-            throws CertificateExpiredException, SSLHandshakeException, CertPathValidatorException {
+            throws CertificateExpiredException, SSLHandshakeException, CertPathValidatorException, ConnectException {
         this.pagePath = pagePath;
         this.site = site;
         this.collFiller = collFiller;
@@ -70,8 +71,11 @@ public class PageCrawler extends RecursiveAction {
 
         } catch (InterruptedException ie) {
             System.out.println("InterruptedException in PageCrawler - Thread: " + Thread.currentThread().getName());
+        } catch (ConnectException ce) {
+            System.out.println("ConnectException in PageCrawler");
+            throw ce;
         } catch (IOException ioe) {
-            System.out.println("IOEx");
+            System.out.println("IOException in PageCrawler");
             throw ioe;
         }
 

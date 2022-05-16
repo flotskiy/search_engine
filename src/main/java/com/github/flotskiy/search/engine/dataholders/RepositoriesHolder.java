@@ -52,6 +52,25 @@ public class RepositoriesHolder {
         return siteIterable.iterator().hasNext();
     }
 
+    public Iterable<Site> getIndexingAndFailedSites() {
+        return siteRepository.getIndexingAndFailedSites();
+    }
+
+    public boolean isReadyForSearch(String siteUrl) {
+        Iterable<Site> siteIterable = siteRepository.getAllSites();
+        if (siteUrl == null || siteUrl.isEmpty()) {
+
+            return siteIterable.iterator().hasNext();
+        }
+        siteUrl = siteUrl + "/";
+        for (Site site : siteIterable) {
+            if (site.getUrl().equals(siteUrl)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void setSiteStatus(int id, Status status) {
         siteRepository.setSiteStatus(id, status.toString(), new Date());
     }

@@ -21,6 +21,9 @@ public interface SiteRepository extends CrudRepository<Site, Integer> {
     @Query(value = "SELECT * FROM Sites WHERE status = 'INDEXING'", nativeQuery = true)
     Iterable<Site> getIndexingSites();
 
+    @Query(value = "SELECT * FROM Sites WHERE status IN ('INDEXING', 'FAILED')", nativeQuery = true)
+    Iterable<Site> getIndexingAndFailedSites();
+
     @Transactional
     @Modifying
     @Query(value = "UPDATE Sites SET status = :status, status_time = :statusTime WHERE id = :id", nativeQuery = true)

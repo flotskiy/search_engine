@@ -7,6 +7,7 @@ import com.github.flotskiy.search.engine.util.StringHelper;
 import com.github.flotskiy.search.engine.util.YmlConfigGetter;
 
 import javax.net.ssl.SSLHandshakeException;
+import java.net.ConnectException;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.CertificateExpiredException;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ public class PageCrawlerStarter {
 
     private static final String INTERRUPTED_BY_USER_MESSAGE = "Indexing stopped by user";
     private static final String CERTIFICATE_ERROR = "Site's certificate validity check failed";
+    private static final String CONNECTION_ERROR = "Connection timed out / failed";
 
     private final AtomicBoolean isStopped = new AtomicBoolean(false);
     private final ForkJoinPool forkJoinPool = new ForkJoinPool();
@@ -51,6 +53,10 @@ public class PageCrawlerStarter {
                 PageCrawler pageCrawler = new PageCrawler(homePage, site, collFiller);
                 forkJoinPool.invoke(pageCrawler);
                 completeActionsAfterForkJoinPoolFinished(site);
+            } catch (ConnectException ce) {
+                System.out.println("ConnectionException in PageCrawlerStarter");
+                fixErrorAndClearCollections(site, CONNECTION_ERROR);
+                return;
             } catch (CancellationException ce) {
                 System.out.println("CancellationException in PageCrawlerStarter");
                 fixErrorAndClearCollections(site, INTERRUPTED_BY_USER_MESSAGE);

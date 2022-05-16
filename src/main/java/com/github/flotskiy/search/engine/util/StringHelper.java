@@ -2,9 +2,6 @@ package com.github.flotskiy.search.engine.util;
 
 import com.github.flotskiy.search.engine.service.indexing.all.CollFiller;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -12,27 +9,18 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class StringHelper {
-    private static final BufferedReader BUFFERED_READER = new BufferedReader(new InputStreamReader(System.in));
-
     private static final int SNIPPET_BORDER = 5;
     private static final String FILE_EXTENSIONS =
             "pdf|PDF|docx?|DOCX?|xlsx?|XLSX?|pptx?|PPTX?|jpe?g|JPE?G|gif|GIF|png|PNG" +
             "|mp3|MP3|mp4|MP4|aac|AAC|json|JSON|csv|CSV|exe|EXE|apk|APK|rar|RAR|zip|ZIP" +
             "|xml|XML|jar|JAR|bin|BIN|svg|SVG|nc|NC|webp|WEBP|m|M|fig|FIG";
 
-    public static String getInputString() {
-        String input = "";
-        System.out.println("Please type smth:");
-        try {
-            input = BUFFERED_READER.readLine();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        return input;
-    }
-
     public static String cutProtocolAndHost(String pagePath, String homePage) {
         return pagePath.substring(homePage.length());
+    }
+
+    public static String cutSlash(String siteNameWithSlash) {
+        return siteNameWithSlash.substring(0, siteNameWithSlash.length() - 1);
     }
 
     public static boolean isHrefToPage(String href) {
@@ -96,15 +84,15 @@ public class StringHelper {
     ) {
         for (int i = start; i <= end; i++) {
             if (i == start) {
-                builder.append("...");
+                builder.append("... ");
             }
             if (lemmasPositions.contains(i)) {
-                builder.append("<b>").append(textList.get(i)).append("<b>").append(" ");
+                builder.append("<b>").append(textList.get(i)).append("</b>").append(" ");
             } else {
                 builder.append(textList.get(i)).append(" ");
             }
             if (i == end) {
-                builder.deleteCharAt(builder.length() - 1).append("...\n");
+                builder.deleteCharAt(builder.length() - 1).append(" ...&emsp;&emsp;");
             }
         }
     }
@@ -117,5 +105,9 @@ public class StringHelper {
             e.printStackTrace();
         }
         return url.getProtocol() + "://" + url.getHost() + "/";
+    }
+
+    public static boolean isStringExists(String s) {
+        return !(s == null || s.matches("\\s+") || s.isEmpty());
     }
 }

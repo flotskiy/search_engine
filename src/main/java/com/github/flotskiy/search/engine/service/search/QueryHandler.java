@@ -3,59 +3,55 @@ package com.github.flotskiy.search.engine.service.search;
 import com.github.flotskiy.search.engine.dataholders.RepositoriesHolder;
 import com.github.flotskiy.search.engine.model.Page;
 import com.github.flotskiy.search.engine.model.SearchResultPage;
+import com.github.flotskiy.search.engine.model.Site;
+import com.github.flotskiy.search.engine.model.search.QueryHolder;
 import com.github.flotskiy.search.engine.util.JsoupHelper;
 import com.github.flotskiy.search.engine.util.StringHelper;
 import com.github.flotskiy.search.engine.service.lemmatizer.Lemmatizer;
 import com.github.flotskiy.search.engine.model.Lemma;
 import org.jsoup.nodes.Document;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Streamable;
-import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Component
 public class QueryHandler {
 
-    private final RepositoriesHolder repositoriesHolder;
-
-    @Autowired
-    public QueryHandler(RepositoriesHolder repositoriesHolder) {
-        this.repositoriesHolder = repositoriesHolder;
-    }
-
-    public List<SearchResultPage> getSearchResult() {
-        List<Lemma> lemmasQueryList = getSortedLemmasQueryListWithFrequencyLessThan95();
+    public static List<SearchResultPage> getSearchResult(RepositoriesHolder repositoriesHolder, QueryHolder queryHolder) {
+        List<Lemma> lemmasQueryList = getSortedLemmasQueryListWithFrequencyLessThan95(repositoriesHolder, queryHolder);
         List<Integer> lemmasIdList = lemmasQueryList.stream().map(Lemma::getId).collect(Collectors.toList());
         List<String> lemmasStringList = lemmasQueryList.stream().map(Lemma::getLemma).collect(Collectors.toList());
-        Set<Page> pages = getPagesSet(lemmasQueryList);
+        Set<Page> pages = getPagesSet(lemmasQueryList, repositoriesHolder);
         if (pages.isEmpty()) {
             System.out.println("Nothing found!");
             return Collections.EMPTY_LIST;
         }
 
         List<SearchResultPage> searchResultPageList = new ArrayList<>();
-        String uri, title, snippet;
+        String site, siteName, uri, title, snippet;
         float relevance;
         Document document;
 
         for (Page page : pages) {
+            Site tempSite = page.getSiteId();
+            site = StringHelper.cutSlash(tempSite.getUrl());
+            siteName = tempSite.getName();
             uri = page.getPath();
             document = JsoupHelper.getDocument(page.getContent());
             title = JsoupHelper.getTitle(document);
             snippet = getSnippet(document, lemmasStringList);
             relevance = repositoriesHolder.getIndexRepository().getTotalLemmasRankForPage(page.getId(), lemmasIdList);
 
-            SearchResultPage searchResultPage = new SearchResultPage(uri, title, snippet, relevance);
+            SearchResultPage searchResultPage = new SearchResultPage(site, siteName, uri, title, snippet, relevance);
             searchResultPageList.add(searchResultPage);
         }
-        searchResultPageList.sort((o1, o2) -> Float.compare(o2.getRelevance(), o1.getRelevance()));
+        searchResultPageList
+                .sort(Comparator.comparing(SearchResultPage::getRelevance).thenComparing(SearchResultPage::getTitle));
         convertAbsoluteRelevanceToRelative(searchResultPageList);
         return searchResultPageList;
     }
 
-    public Set<Page> getPagesSet(List<Lemma> lemmasQueryList) {
+    public static Set<Page> getPagesSet(List<Lemma> lemmasQueryList, RepositoriesHolder repositoriesHolder) {
         if (lemmasQueryList.size() < 1) {
             return Collections.EMPTY_SET;
         }
@@ -75,8 +71,14 @@ public class QueryHandler {
         return pagesResultSet;
     }
 
-    public List<Lemma> getSortedLemmasQueryListWithFrequencyLessThan95() {
-        String query = StringHelper.getInputString();
+    public static List<Lemma> getSortedLemmasQueryListWithFrequencyLessThan95(
+            RepositoriesHolder repositoriesHolder,
+            QueryHolder queryHolder
+            ) {
+        String query = queryHolder.getQuery();
+        if (query == null || query.isEmpty()) {
+            return Collections.EMPTY_LIST;
+        }
         Set<String> queryWordsSet = Lemmatizer.getLemmasCountMap(query).keySet();
 
         Iterable<Lemma> frequentlyOccurringLemmasIterable =
@@ -94,14 +96,14 @@ public class QueryHandler {
         return lemmasList;
     }
 
-    private void convertAbsoluteRelevanceToRelative(List<SearchResultPage> searchResultPageList) {
+    private static void convertAbsoluteRelevanceToRelative(List<SearchResultPage> searchResultPageList) {
         float maxRelevanceValue = searchResultPageList.get(0).getRelevance();
         for (SearchResultPage result : searchResultPageList) {
             result.setRelevance(result.getRelevance() / maxRelevanceValue);
         }
     }
 
-    private String getSnippet(Document document, List<String> queryList) {
+    private static String getSnippet(Document document, List<String> queryList) {
         String documentText = document.text();
         List<String> textList = new ArrayList<>(Arrays.asList(documentText.split("\\s+")));
         List<String> textListLemmatized = Lemmatizer.getLemmatizedList(textList);
