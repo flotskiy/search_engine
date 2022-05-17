@@ -14,10 +14,11 @@ public interface PageRepository extends CrudRepository<Page, Integer> {
                     "FROM Pages p " +
                     "JOIN Search_index s " +
                     "ON p.id = s.page_id " +
-                    "WHERE s.lemma_id = :lemmaId",
+                    "WHERE s.lemma_id IN " +
+                    "(SELECT id FROM Lemmas l WHERE l.lemma = :lemma)",
             nativeQuery = true
     )
-    Iterable<Page> getPagesByLemmaId(@Param("lemmaId") int lemmaId);
+    Iterable<Page> getPagesByLemma(@Param("lemma") String lemma);
 
     @Query(value = "SELECT * FROM Pages WHERE path = :path", nativeQuery = true)
     Page getPageByPath(@Param("path") String path);

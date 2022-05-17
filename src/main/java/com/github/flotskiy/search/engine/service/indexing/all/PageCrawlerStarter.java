@@ -17,10 +17,10 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PageCrawlerStarter {
-
     private static final String INTERRUPTED_BY_USER_MESSAGE = "Indexing stopped by user";
     private static final String CERTIFICATE_ERROR = "Site's certificate validity check failed";
     private static final String CONNECTION_ERROR = "Connection timed out / failed";
+    private static final String UNKNOWN_ERROR = "Unknown error";
 
     private final AtomicBoolean isStopped = new AtomicBoolean(false);
     private final ForkJoinPool forkJoinPool = new ForkJoinPool();
@@ -62,8 +62,12 @@ public class PageCrawlerStarter {
                 fixErrorAndClearCollections(site, INTERRUPTED_BY_USER_MESSAGE);
                 return;
             } catch (CertificateExpiredException | SSLHandshakeException | CertPathValidatorException certEx) {
-                System.out.println("CertifException");
+                System.out.println("CertifException in PageCrawlerStarter");
                 fixErrorAndClearCollections(site, CERTIFICATE_ERROR);
+                return;
+            } catch (Exception e) {
+                System.out.println("Exception in PageCrawlerStarter");
+                fixErrorAndClearCollections(site, UNKNOWN_ERROR);
                 return;
             }
             if (isStopped.get()) {

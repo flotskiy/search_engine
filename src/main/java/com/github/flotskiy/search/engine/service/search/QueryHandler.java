@@ -56,15 +56,15 @@ public class QueryHandler {
             return Collections.EMPTY_SET;
         }
 
-        int lemmaId = lemmasQueryList.get(0).getId();
+        String firstLemma = lemmasQueryList.get(0).getLemma();
         Set<Page> pagesResultSet = new HashSet<>();
         Set<Page> pagesTempSet = new HashSet<>();
-        Iterable<Page> pagesIterable = repositoriesHolder.getPageRepository().getPagesByLemmaId(lemmaId);
+        Iterable<Page> pagesIterable = repositoriesHolder.getPageRepository().getPagesByLemma(firstLemma);
         pagesIterable.forEach(pagesResultSet::add);
 
         for (int i = 1; i < lemmasQueryList.size(); i++) {
             pagesTempSet.clear();
-            pagesIterable = repositoriesHolder.getPageRepository().getPagesByLemmaId(lemmasQueryList.get(i).getId());
+            pagesIterable = repositoriesHolder.getPageRepository().getPagesByLemma(lemmasQueryList.get(i).getLemma());
             pagesIterable.forEach(pagesTempSet::add);
             pagesResultSet.retainAll(pagesTempSet);
         }
@@ -92,7 +92,6 @@ public class QueryHandler {
 
         List<Lemma> lemmasList = new ArrayList<>(modifiableTempSet);
         lemmasList.sort((l1, l2) -> l1.getFrequency() < l2.getFrequency() ? -1 : 1);
-
         return lemmasList;
     }
 
