@@ -15,10 +15,10 @@ public interface PageRepository extends CrudRepository<Page, Integer> {
                     "JOIN Search_index s " +
                     "ON p.id = s.page_id " +
                     "WHERE s.lemma_id IN " +
-                    "(SELECT id FROM Lemmas l WHERE l.lemma = :lemma)",
+                    "(SELECT id FROM Lemmas l WHERE l.id = :lemmaId)",
             nativeQuery = true
     )
-    Iterable<Page> getPagesByLemma(@Param("lemma") String lemma);
+    Iterable<Page> getPagesByLemma(@Param("lemmaId") int lemmaId);
 
     @Query(
             value = "SELECT p.id, p.code, p.content, p.path, p.site_id " +
@@ -26,10 +26,10 @@ public interface PageRepository extends CrudRepository<Page, Integer> {
                     "JOIN Search_index s " +
                     "ON p.id = s.page_id " +
                     "WHERE s.lemma_id IN " +
-                    "(SELECT id FROM Lemmas l WHERE l.lemma = :lemma AND l.site_id = :id)",
+                    "(SELECT id FROM Lemmas l WHERE l.id = :lemmaId AND l.site_id = :siteId)",
             nativeQuery = true
     )
-    Iterable<Page> getPagesByLemmaAndSiteId(@Param("lemma") String lemma, @Param("id") int id);
+    Iterable<Page> getPagesByLemmaAndSiteId(@Param("lemmaId") int lemmaId, @Param("siteId") int siteId);
 
     @Query(value = "SELECT * FROM Pages WHERE path = :path", nativeQuery = true)
     Page getPageByPath(@Param("path") String path);

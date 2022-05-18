@@ -67,7 +67,9 @@ public class PageCrawler extends RecursiveAction {
             String pathToSave = StringHelper.cutProtocolAndHost(pagePath, homePage);
             Page page = new Page(pathToSave, httpStatusCode, html, site);
             collFiller.addPageToPagesList(page);
-            collFiller.fillInLemmasMapAndTempIndexList(httpStatusCode, html, page, site);
+            if (httpStatusCode == 200) {
+                collFiller.fillInLemmasMapAndTempIndexList(html, page, site);
+            }
 
         } catch (InterruptedException ie) {
             System.out.println("InterruptedException in PageCrawler - Thread: " + Thread.currentThread().getName());

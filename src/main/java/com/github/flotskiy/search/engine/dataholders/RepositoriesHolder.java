@@ -36,12 +36,8 @@ public class RepositoriesHolder {
         this.siteRepository = siteRepository;
     }
 
-    public Iterable<Lemma> getLemmasWithOccurrenceFrequencyPerCentMoreThan95() {
-        return lemmaRepository.getLemmasWithOccurrenceFrequencyPerCentMoreThan95();
-    }
-
-    public Iterable<Lemma> getLemmasFromQueryWords(Set<String> queryWords) {
-        return lemmaRepository.getLemmasWithQueryWords(queryWords);
+    public Iterable<Lemma> getLemmasWithQueryWordsAndWithOccurrenceFrequencyPerCentLessThan95(Set<String> queryWords) {
+        return lemmaRepository.getLemmasWithQueryWordsAndWithOccurrenceFrequencyPerCentLessThan95(queryWords);
     }
 
     public void truncateFields() {
@@ -57,21 +53,6 @@ public class RepositoriesHolder {
         return siteRepository.getIndexingAndFailedSites();
     }
 
-    public boolean isReadyForSearch(String siteUrl) {
-        Iterable<Site> siteIterable = siteRepository.getAllSites();
-        if (siteUrl == null || siteUrl.isEmpty()) {
-
-            return siteIterable.iterator().hasNext();
-        }
-        siteUrl = siteUrl + "/";
-        for (Site site : siteIterable) {
-            if (site.getUrl().equals(siteUrl)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public void setSiteStatus(int id, Status status) {
         siteRepository.setSiteStatus(id, status.toString(), new Date());
     }
@@ -80,10 +61,10 @@ public class RepositoriesHolder {
         siteRepository.setFailedStatus(id, new Date(), error);
     }
 
-    public Iterable<Page> getPagesByLemmaAndSiteId(String lemma, int siteId) {
+    public Iterable<Page> getPagesByLemmaAndSiteId(int lemmaId, int siteId) {
         if (siteId == -1) {
-            return pageRepository.getPagesByLemma(lemma);
+            return pageRepository.getPagesByLemma(lemmaId);
         }
-        return pageRepository.getPagesByLemmaAndSiteId(lemma, siteId);
+        return pageRepository.getPagesByLemmaAndSiteId(lemmaId, siteId);
     }
 }

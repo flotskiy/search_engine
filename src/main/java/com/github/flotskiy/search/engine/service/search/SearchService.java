@@ -12,8 +12,6 @@ import java.util.List;
 public class SearchService {
 
     public static boolean isQueryExists(String query) {
-        System.out.println("'" + query + "'");
-        System.out.println("isStringExists - " + StringHelper.isStringExists(query));
         return StringHelper.isStringExists(query);
     }
 
@@ -51,7 +49,7 @@ public class SearchService {
 
     public static boolean hasIndexingAndFailedSites(RepositoriesHolder repositoriesHolder, String siteName) {
         System.out.println("siteName - " + siteName);
-        Iterable<Site> siteIterable = repositoriesHolder.getSiteRepository().getIndexingAndFailedSites();
+        Iterable<Site> siteIterable = repositoriesHolder.getIndexingAndFailedSites();
         if (siteName == null || siteName.isEmpty()) {
             return siteIterable.iterator().hasNext();
         }

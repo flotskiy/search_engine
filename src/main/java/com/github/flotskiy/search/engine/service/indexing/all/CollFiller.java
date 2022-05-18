@@ -49,11 +49,7 @@ public class CollFiller {
         }
     }
 
-    public void fillInLemmasMapAndTempIndexList(int code, String html, Page page, Site site) {
-        if (code != 200) {
-            return;
-        }
-
+    public void fillInLemmasMapAndTempIndexList(String html, Page page, Site site) {
         Document htmlDocument = JsoupHelper.getDocument(html);
         String title = htmlDocument.title();
         System.out.println(title);

@@ -10,7 +10,6 @@ import com.github.flotskiy.search.engine.util.StringHelper;
 import com.github.flotskiy.search.engine.service.lemmatizer.Lemmatizer;
 import com.github.flotskiy.search.engine.model.Lemma;
 import org.jsoup.nodes.Document;
-import org.springframework.data.util.Streamable;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,10 +17,10 @@ import java.util.stream.Collectors;
 public class QueryHandler {
 
     public static List<SearchResultPage> getSearchResult(RepositoriesHolder repositoriesHolder, QueryHolder queryHolder) {
-        List<Lemma> lemmasQueryList = getSortedLemmasQueryListWithFrequencyLessThan95(repositoriesHolder, queryHolder);
+        List<Lemma> lemmasQueryList =
+                getSortedLemmasQueryListWithFrequencyLessThan95(repositoriesHolder, queryHolder.getQuery());
         if (lemmasQueryList.size() < 1) {
-            System.out.println("Nothing found!");
-            return Collections.EMPTY_LIST;
+            return leaveSearchResultMethodAndReturnEmptyList();
         }
 
         List<Integer> lemmasIdList = lemmasQueryList.stream().map(Lemma::getId).collect(Collectors.toList());
@@ -35,13 +34,16 @@ public class QueryHandler {
                 siteId = site.getId();
             }
         }
+
         Set<Page> pages = getPagesSet(lemmasQueryList, repositoriesHolder, siteId);
+        if (pages.size() < 1) {
+            return leaveSearchResultMethodAndReturnEmptyList();
+        }
 
         List<SearchResultPage> searchResultPageList = new ArrayList<>();
         String site, siteName, uri, title, snippet;
         float relevance;
         Document document;
-
         for (Page page : pages) {
             Site tempSite = page.getSiteId();
             site = StringHelper.cutSlash(tempSite.getUrl());
@@ -62,15 +64,15 @@ public class QueryHandler {
     }
 
     public static Set<Page> getPagesSet(List<Lemma> lemmasQueryList, RepositoriesHolder repositoriesHolder, int siteId) {
-        String firstLemma = lemmasQueryList.get(0).getLemma();
+        int firstLemmaId = lemmasQueryList.get(0).getId();
         Set<Page> pagesResultSet = new HashSet<>();
         Set<Page> pagesTempSet = new HashSet<>();
-        Iterable<Page> pagesIterable = repositoriesHolder.getPagesByLemmaAndSiteId(firstLemma, siteId);
+        Iterable<Page> pagesIterable = repositoriesHolder.getPagesByLemmaAndSiteId(firstLemmaId, siteId);
         pagesIterable.forEach(pagesResultSet::add);
 
         for (int i = 1; i < lemmasQueryList.size(); i++) {
             pagesTempSet.clear();
-            pagesIterable = repositoriesHolder.getPagesByLemmaAndSiteId(lemmasQueryList.get(i).getLemma(), siteId);
+            pagesIterable = repositoriesHolder.getPagesByLemmaAndSiteId(lemmasQueryList.get(i).getId(), siteId);
             pagesIterable.forEach(pagesTempSet::add);
             pagesResultSet.retainAll(pagesTempSet);
         }
@@ -78,24 +80,18 @@ public class QueryHandler {
     }
 
     public static List<Lemma> getSortedLemmasQueryListWithFrequencyLessThan95(
-            RepositoriesHolder repositoriesHolder, QueryHolder queryHolder
+            RepositoriesHolder repositoriesHolder, String query
             ) {
-        String query = queryHolder.getQuery();
         if (query == null || query.isEmpty()) {
             return Collections.EMPTY_LIST;
         }
         Set<String> queryWordsSet = Lemmatizer.getLemmasCountMap(query).keySet();
 
-        Iterable<Lemma> frequentlyOccurringLemmasIterable =
-                repositoriesHolder.getLemmasWithOccurrenceFrequencyPerCentMoreThan95();
-        Set<Lemma> frequentlyOccurringLemmasSet = Streamable.of(frequentlyOccurringLemmasIterable).toSet();
+        Iterable<Lemma> queryLemmasIterable =
+                repositoriesHolder.getLemmasWithQueryWordsAndWithOccurrenceFrequencyPerCentLessThan95(queryWordsSet);
 
-        Iterable<Lemma> queryLemmasIterable = repositoriesHolder.getLemmasFromQueryWords(queryWordsSet);
-        Set<Lemma> queryLemmasSet = Streamable.of(queryLemmasIterable).toSet();
-        Set<Lemma> modifiableTempSet = new HashSet<>(queryLemmasSet);
-        modifiableTempSet.removeAll(frequentlyOccurringLemmasSet);
-
-        List<Lemma> lemmasList = new ArrayList<>(modifiableTempSet);
+        List<Lemma> lemmasList = new ArrayList<>();
+        queryLemmasIterable.forEach(lemmasList::add);
         lemmasList.sort((l1, l2) -> l1.getFrequency() < l2.getFrequency() ? -1 : 1);
         return lemmasList;
     }
@@ -127,5 +123,10 @@ public class QueryHandler {
         lemmasPositions.sort(Integer::compareTo);
 
         return StringHelper.buildSnippet(textList, lemmasPositions);
+    }
+
+    private static List<SearchResultPage> leaveSearchResultMethodAndReturnEmptyList() {
+        System.out.println("Nothing found!");
+        return Collections.EMPTY_LIST;
     }
 }
