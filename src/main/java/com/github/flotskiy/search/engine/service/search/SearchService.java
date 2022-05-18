@@ -13,14 +13,11 @@ public class SearchService {
 
     public static boolean isQueryExists(String query) {
         System.out.println("'" + query + "'");
-        System.out.println(StringHelper.isStringExists(query));
+        System.out.println("isStringExists - " + StringHelper.isStringExists(query));
         return StringHelper.isStringExists(query);
     }
 
-    public static SearchResultTrue getSearchResult(
-            RepositoriesHolder repositoriesHolder,
-            QueryHolder queryHolder
-            ) {
+    public static SearchResultTrue getSearchResult(RepositoriesHolder repositoriesHolder, QueryHolder queryHolder) {
 
         List<SearchResultPage> searchResultPageList = QueryHandler.getSearchResult(repositoriesHolder, queryHolder);
 

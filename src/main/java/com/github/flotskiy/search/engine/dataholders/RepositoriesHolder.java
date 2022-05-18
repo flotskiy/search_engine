@@ -1,6 +1,7 @@
 package com.github.flotskiy.search.engine.dataholders;
 
 import com.github.flotskiy.search.engine.model.Lemma;
+import com.github.flotskiy.search.engine.model.Page;
 import com.github.flotskiy.search.engine.model.Site;
 import com.github.flotskiy.search.engine.model.Status;
 import com.github.flotskiy.search.engine.repositories.*;
@@ -77,5 +78,12 @@ public class RepositoriesHolder {
 
     public void setFailedStatus(int id, String error) {
         siteRepository.setFailedStatus(id, new Date(), error);
+    }
+
+    public Iterable<Page> getPagesByLemmaAndSiteId(String lemma, int siteId) {
+        if (siteId == -1) {
+            return pageRepository.getPagesByLemma(lemma);
+        }
+        return pageRepository.getPagesByLemmaAndSiteId(lemma, siteId);
     }
 }
