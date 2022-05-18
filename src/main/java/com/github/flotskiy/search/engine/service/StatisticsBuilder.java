@@ -32,7 +32,7 @@ public class StatisticsBuilder {
     }
 
     private static void fillInDetailed(RepositoriesHolder holder, List<Detailed> detailed) {
-        Iterable<Site> siteIterable = holder.getSiteRepository().getAllSites();
+        Iterable<Site> siteIterable = holder.getAllSites();
         for (Site site : siteIterable) {
             Detailed detailedObj = new Detailed();
             detailedObj.setUrl(site.getUrl());

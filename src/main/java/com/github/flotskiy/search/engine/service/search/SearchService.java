@@ -19,8 +19,6 @@ public class SearchService {
 
         List<SearchResultPage> searchResultPageList = QueryHandler.getSearchResult(repositoriesHolder, queryHolder);
 
-        searchResultPageList.forEach(System.out::println);
-
         SearchResultTrue searchResultTrue = new SearchResultTrue();
         int noOfPagesResult = searchResultPageList.size();
         searchResultTrue.setCount(noOfPagesResult);
@@ -48,7 +46,6 @@ public class SearchService {
     }
 
     public static boolean hasIndexingAndFailedSites(RepositoriesHolder repositoriesHolder, String siteName) {
-        System.out.println("siteName - " + siteName);
         Iterable<Site> siteIterable = repositoriesHolder.getIndexingAndFailedSites();
         if (siteName == null || siteName.isEmpty()) {
             return siteIterable.iterator().hasNext();

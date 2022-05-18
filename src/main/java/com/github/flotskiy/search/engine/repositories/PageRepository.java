@@ -15,10 +15,10 @@ public interface PageRepository extends CrudRepository<Page, Integer> {
                     "JOIN Search_index s " +
                     "ON p.id = s.page_id " +
                     "WHERE s.lemma_id IN " +
-                    "(SELECT id FROM Lemmas l WHERE l.id = :lemmaId)",
+                    "(SELECT id FROM Lemmas l WHERE l.lemma = :lemma)",
             nativeQuery = true
     )
-    Iterable<Page> getPagesByLemma(@Param("lemmaId") int lemmaId);
+    Iterable<Page> getPagesByLemma(@Param("lemma") String lemma);
 
     @Query(
             value = "SELECT p.id, p.code, p.content, p.path, p.site_id " +
@@ -26,10 +26,10 @@ public interface PageRepository extends CrudRepository<Page, Integer> {
                     "JOIN Search_index s " +
                     "ON p.id = s.page_id " +
                     "WHERE s.lemma_id IN " +
-                    "(SELECT id FROM Lemmas l WHERE l.id = :lemmaId AND l.site_id = :siteId)",
+                    "(SELECT id FROM Lemmas l WHERE l.lemma = :lemma AND l.site_id = :siteId)",
             nativeQuery = true
     )
-    Iterable<Page> getPagesByLemmaAndSiteId(@Param("lemmaId") int lemmaId, @Param("siteId") int siteId);
+    Iterable<Page> getPagesByLemmaAndSiteId(@Param("lemma") String lemma, @Param("siteId") int siteId);
 
     @Query(value = "SELECT * FROM Pages WHERE path = :path", nativeQuery = true)
     Page getPageByPath(@Param("path") String path);
@@ -39,4 +39,7 @@ public interface PageRepository extends CrudRepository<Page, Integer> {
 
     @Query(value = "SELECT COUNT(*) FROM Pages WHERE site_id = :siteId", nativeQuery = true)
     int getNumberOfPagesOnSite(@Param("siteId") int siteId);
+
+    @Query(value = "SELECT COUNT(*) * 95 / 100 FROM Pages WHERE site_id = :siteId", nativeQuery = true)
+    float get95perCentPagesCount(@Param("siteId") int siteId);
 }

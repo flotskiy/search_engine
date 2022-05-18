@@ -33,8 +33,7 @@ public class CollFiller {
     }
 
     public void fillInSiteList(Map<String, String> SOURCES_MAP) {
-        Iterable<Site> sitesInRepository = repositoriesHolder.getSiteRepository().getAllSites();
-
+        Iterable<Site> sitesInRepository = repositoriesHolder.getAllSites();
         for (Map.Entry<String, String> entry : SOURCES_MAP.entrySet()) {
             Site site = new Site(Status.INDEXING, "no errors", new Date(), entry.getValue(), entry.getKey());
             for (Site siteFromRepository : sitesInRepository) {
