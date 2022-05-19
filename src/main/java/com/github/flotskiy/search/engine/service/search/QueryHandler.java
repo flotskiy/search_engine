@@ -60,7 +60,8 @@ public class QueryHandler {
             searchResultPageList.add(searchResultPage);
         }
         searchResultPageList
-                .sort(Comparator.comparing(SearchResultPage::getRelevance).thenComparing(SearchResultPage::getTitle));
+                .sort(Comparator.comparing(SearchResultPage::getRelevance).reversed()
+                        .thenComparing(SearchResultPage::getTitle));
         convertAbsoluteRelevanceToRelative(searchResultPageList);
         return searchResultPageList;
     }

@@ -16,7 +16,6 @@ public class SearchService {
     }
 
     public static SearchResultTrue getSearchResult(RepositoriesHolder repositoriesHolder, QueryHolder queryHolder) {
-
         List<SearchResultPage> searchResultPageList = QueryHandler.getSearchResult(repositoriesHolder, queryHolder);
 
         SearchResultTrue searchResultTrue = new SearchResultTrue();
@@ -31,17 +30,11 @@ public class SearchService {
         } else {
             dataValueSize = dataArrayEndIndex - dataArrayStartIndex;
         }
-
         List<SearchResultPage> dataValue = new ArrayList<>();
-        for (
-             int i = dataArrayStartIndex;
-             i < dataArrayStartIndex + dataValueSize;
-             i++
-        ) {
+        for (int i = dataArrayStartIndex; i < dataArrayStartIndex + dataValueSize; i++) {
             dataValue.add(searchResultPageList.get(i));
         }
         searchResultTrue.setData(dataValue);
-
         return searchResultTrue;
     }
 

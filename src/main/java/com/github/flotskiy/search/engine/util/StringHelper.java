@@ -27,9 +27,7 @@ public class StringHelper {
         if (href.matches(".*(#|\\?).*")) {
             return false;
         }
-        return !href.matches(
-                ".*\\.(" + FILE_EXTENSIONS + ")/?"
-        );
+        return !href.matches(".*\\.(" + FILE_EXTENSIONS + ")/?");
     }
 
     public static boolean isHrefValid(String homePage, String href, CollFiller collFiller) {
@@ -49,7 +47,6 @@ public class StringHelper {
 
         Map<Integer, Integer> snippetsBorders = lemmasPositions.stream()
                 .collect(TreeMap::new, (map, i) -> map.put(i - SNIPPET_BORDER, i + SNIPPET_BORDER), Map::putAll);
-
         for (Map.Entry<Integer, Integer> entry : snippetsBorders.entrySet()) {
             if (entry.getKey() <= end) {
                 end = entry.getValue();
@@ -68,6 +65,9 @@ public class StringHelper {
                 buildStringBuilder(builder, textList, lemmasPositions, start, end);
             }
         }
+        if (builder.toString().isEmpty()) {
+            buildStringBuilder(builder, textList, lemmasPositions, start, end);
+        }
         return builder.toString();
     }
 
@@ -76,11 +76,7 @@ public class StringHelper {
     }
 
     private static void buildStringBuilder(
-            StringBuilder builder,
-            List<String> textList,
-            List<Integer> lemmasPositions,
-            int start,
-            int end
+            StringBuilder builder, List<String> textList, List<Integer> lemmasPositions, int start, int end
     ) {
         for (int i = start; i <= end; i++) {
             if (i == start) {
