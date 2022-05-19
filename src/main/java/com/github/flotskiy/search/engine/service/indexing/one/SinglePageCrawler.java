@@ -36,7 +36,7 @@ public class SinglePageCrawler {
             URL url = new URL(pagePathFromUser);
             String homePage = url.getProtocol() + "://" + url.getHost();
             Site siteToAddPage = null;
-            Iterable<Site> allSitesIterable = repositoriesHolder.getAllSites();
+            Iterable<Site> allSitesIterable = repositoriesHolder.findAllSites();
             for (Site site : allSitesIterable) {
                 if (site.getUrl().equals(homePage + "/")) {
                     siteToAddPage = site;

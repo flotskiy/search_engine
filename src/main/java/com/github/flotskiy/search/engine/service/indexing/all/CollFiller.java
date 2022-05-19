@@ -26,19 +26,19 @@ public class CollFiller {
     }
 
     public void fillInSelectorsAndWeigh() {
-        Iterable<Field> fieldIterable = repositoriesHolder.getFieldRepository().findAll();
+        Iterable<Field> fieldIterable = repositoriesHolder.findAllFields();
         for (Field field : fieldIterable) {
             collectionsHolder.getSelectorsAndWeight().put(field.getSelector(), field.getWeight());
         }
     }
 
     public void fillInSiteList(Map<String, String> SOURCES_MAP) {
-        Iterable<Site> sitesInRepository = repositoriesHolder.getAllSites();
+        Iterable<Site> sitesInRepository = repositoriesHolder.findAllSites();
         for (Map.Entry<String, String> entry : SOURCES_MAP.entrySet()) {
             Site site = new Site(Status.INDEXING, "no errors", new Date(), entry.getValue(), entry.getKey());
             for (Site siteFromRepository : sitesInRepository) {
                 if (site.getName().equals(siteFromRepository.getName())) {
-                    repositoriesHolder.getSiteRepository().deletePreviouslyIndexedSiteByName(
+                    repositoriesHolder.deletePreviouslyIndexedSiteByName(
                             siteFromRepository.getName(), siteFromRepository.getId()
                     );
                     break;
@@ -68,8 +68,7 @@ public class CollFiller {
                             siteLemmaPair,
                             collectionsHolder.getSiteLemmaMap().getOrDefault(siteLemmaPair, 0) + 1
                     );
-            float lemmaRank =
-                    calculateLemmaRank(lemma, titleLemmasCount, bodyLemmasCount);
+            float lemmaRank = calculateLemmaRank(lemma, titleLemmasCount, bodyLemmasCount);
             collectionsHolder.getTempIndexList().add(new TempIndex(page, lemma, lemmaRank));
         }
     }
@@ -88,9 +87,7 @@ public class CollFiller {
     }
 
     public float calculateLemmaRank(
-            String lemma,
-            Map<String, Integer> titleLemmasCount,
-            Map<String, Integer> bodyLemmasCount
+            String lemma, Map<String, Integer> titleLemmasCount, Map<String, Integer> bodyLemmasCount
             ) {
         return titleLemmasCount.getOrDefault(lemma, 0) *
                 collectionsHolder.getSelectorsAndWeight().get("title") +

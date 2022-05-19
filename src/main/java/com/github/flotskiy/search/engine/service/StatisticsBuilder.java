@@ -32,7 +32,7 @@ public class StatisticsBuilder {
     }
 
     private static void fillInDetailed(RepositoriesHolder holder, List<Detailed> detailed) {
-        Iterable<Site> siteIterable = holder.getAllSites();
+        Iterable<Site> siteIterable = holder.findAllSites();
         for (Site site : siteIterable) {
             Detailed detailedObj = new Detailed();
             detailedObj.setUrl(site.getUrl());
@@ -52,15 +52,15 @@ public class StatisticsBuilder {
     }
 
     private static int getTotalSites(RepositoriesHolder holder) {
-        return holder.getSiteRepository().getNumberOfSites();
+        return holder.getNumberOfSites();
     }
 
     private static int getTotalPages(RepositoriesHolder holder) {
-        return holder.getPageRepository().getNumberOfPages();
+        return holder.getNumberOfPages();
     }
 
     private static int getTotalLemmas(RepositoriesHolder holder) {
-        return holder.getLemmaRepository().getNumberOfLemmas();
+        return holder.getNumberOfLemmas();
     }
 
     private static boolean isIndexing(RepositoriesHolder holder) {

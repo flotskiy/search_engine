@@ -37,9 +37,6 @@ public interface SiteRepository extends CrudRepository<Site, Integer> {
     )
     void setFailedStatus(@Param("id") int id, @Param("statusTime") Date date, @Param("error") String error);
 
-    @Query(value = "SELECT * FROM Sites", nativeQuery = true)
-    Iterable<Site> getAllSites();
-
     @Query(value = "SELECT COUNT(*) FROM Sites", nativeQuery = true)
     int getNumberOfSites();
 }

@@ -15,8 +15,5 @@ public interface IndexRepository extends CrudRepository<Index, Integer> {
             value = "SELECT SUM(lemma_rank) FROM Search_index WHERE page_id = :pageId AND lemma_id IN :lemmasList",
             nativeQuery = true
     )
-    float getTotalLemmasRankForPage(
-            @Param("pageId") int pageId,
-            @Param("lemmasList") Collection<Integer> lemmasList
-    );
+    float getTotalLemmasRankForPage(@Param("pageId") int pageId, @Param("lemmasList") Collection<Integer> lemmasList);
 }

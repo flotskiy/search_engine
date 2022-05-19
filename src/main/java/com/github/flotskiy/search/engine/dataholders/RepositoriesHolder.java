@@ -1,15 +1,13 @@
 package com.github.flotskiy.search.engine.dataholders;
 
-import com.github.flotskiy.search.engine.model.Lemma;
-import com.github.flotskiy.search.engine.model.Page;
-import com.github.flotskiy.search.engine.model.Site;
-import com.github.flotskiy.search.engine.model.Status;
+import com.github.flotskiy.search.engine.model.*;
 import com.github.flotskiy.search.engine.repositories.*;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -36,12 +34,55 @@ public class RepositoriesHolder {
         this.siteRepository = siteRepository;
     }
 
-    public Iterable<Lemma> getLemmasWithQueryWords(Set<String> queryWords) {
-        return lemmaRepository.getLemmasWithQueryWords(queryWords);
+    public Iterable<Page> getPagesByLemmaAndSiteId(String lemma, int siteId) {
+        if (siteId == -1) {
+            return pageRepository.getPagesByLemma(lemma);
+        }
+        return pageRepository.getPagesByLemmaAndSiteId(lemma, siteId);
+    }
+
+    public float get95perCentPagesCount(int siteId) {
+        return pageRepository.get95perCentPagesCount(siteId);
+    }
+
+    public void saveAllPages(List<Page> pageList) {
+        pageRepository.saveAll(pageList);
+    }
+
+    public int getNumberOfPages() {
+        return pageRepository.getNumberOfPages();
     }
 
     public void truncateFields() {
         fieldRepository.truncateFields();
+    }
+
+    public Iterable<Field> findAllFields() {
+        return fieldRepository.findAll();
+    }
+
+    public void saveNewField(Field field) {
+        fieldRepository.save(field);
+    }
+
+    public Iterable<Lemma> getLemmasWithQueryWords(Set<String> queryWords) {
+        return lemmaRepository.getLemmasWithQueryWords(queryWords);
+    }
+
+    public void saveAllLemmas(List<Lemma> lemmaList) {
+        lemmaRepository.saveAll(lemmaList);
+    }
+
+    public Iterable<Lemma> findAllLemmas() {
+        return lemmaRepository.findAll();
+    }
+
+    public int getNumberOfLemmas() {
+        return lemmaRepository.getNumberOfLemmas();
+    }
+
+    public void saveAllIndexes(List<Index> indexList) {
+        indexRepository.saveAll(indexList);
     }
 
     public boolean isIndexing() {
@@ -61,18 +102,19 @@ public class RepositoriesHolder {
         siteRepository.setFailedStatus(id, new Date(), error);
     }
 
-    public Iterable<Page> getPagesByLemmaAndSiteId(String lemma, int siteId) {
-        if (siteId == -1) {
-            return pageRepository.getPagesByLemma(lemma);
-        }
-        return pageRepository.getPagesByLemmaAndSiteId(lemma, siteId);
+    public Iterable<Site> findAllSites() {
+        return siteRepository.findAll();
     }
 
-    public float get95perCentPagesCount(int siteId) {
-        return pageRepository.get95perCentPagesCount(siteId);
+    public void deletePreviouslyIndexedSiteByName(String name, int id) {
+        siteRepository.deletePreviouslyIndexedSiteByName(name, id);
     }
 
-    public Iterable<Site> getAllSites() {
-        return siteRepository.getAllSites();
+    public void saveNewSite(Site site) {
+        siteRepository.save(site);
+    }
+
+    public int getNumberOfSites() {
+        return siteRepository.getNumberOfSites();
     }
 }

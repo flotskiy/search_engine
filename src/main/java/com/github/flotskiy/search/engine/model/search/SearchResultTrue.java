@@ -1,6 +1,5 @@
 package com.github.flotskiy.search.engine.model.search;
 
-import com.github.flotskiy.search.engine.model.SearchResultPage;
 import lombok.Getter;
 import lombok.Setter;
 

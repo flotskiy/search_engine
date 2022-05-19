@@ -41,7 +41,6 @@ public class PageCrawlerStarter {
         if (SOURCES_MAP.size() < 1) {
             System.out.println("No sites specified!");
         }
-
         long start = System.currentTimeMillis();
         collFiller.fillInSelectorsAndWeigh();
         collFiller.fillInSiteList(SOURCES_MAP);

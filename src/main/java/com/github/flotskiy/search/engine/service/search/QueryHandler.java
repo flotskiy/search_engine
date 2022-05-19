@@ -2,7 +2,7 @@ package com.github.flotskiy.search.engine.service.search;
 
 import com.github.flotskiy.search.engine.dataholders.RepositoriesHolder;
 import com.github.flotskiy.search.engine.model.Page;
-import com.github.flotskiy.search.engine.model.SearchResultPage;
+import com.github.flotskiy.search.engine.model.search.SearchResultPage;
 import com.github.flotskiy.search.engine.model.Site;
 import com.github.flotskiy.search.engine.model.search.QueryHolder;
 import com.github.flotskiy.search.engine.util.JsoupHelper;
@@ -16,15 +16,16 @@ import java.util.stream.Collectors;
 
 public class QueryHandler {
 
-    public static List<SearchResultPage> getSearchResult(RepositoriesHolder repositoriesHolder, QueryHolder queryHolder) {
-        Iterable<Site> siteIterable = repositoriesHolder.getAllSites();
+    public static List<SearchResultPage> getSearchResult(
+            RepositoriesHolder repositoriesHolder, QueryHolder queryHolder
+    ) {
+        Iterable<Site> siteIterable = repositoriesHolder.findAllSites();
         List<Lemma> lemmasQueryList = getSortedLemmasQueryList(repositoriesHolder, queryHolder.getQuery());
         Set<Integer> removedSiteIdSet =
                 cleanLemmasQueryListFromFrequentLemmas(lemmasQueryList, repositoriesHolder, siteIterable);
         if (lemmasQueryList.size() < 1) {
             return leaveSearchResultMethodAndReturnEmptyList();
         }
-
         List<Integer> lemmasIdList = lemmasQueryList.stream().map(Lemma::getId).collect(Collectors.toList());
         List<String> lemmasStringList = lemmasQueryList.stream().map(Lemma::getLemma).collect(Collectors.toList());
 
@@ -35,13 +36,11 @@ public class QueryHandler {
                 siteId = site.getId();
             }
         }
-
         Set<Page> pages = getPagesSet(lemmasQueryList, repositoriesHolder, siteId);
         pages.removeIf(page -> removedSiteIdSet.contains(page.getSiteId().getId()));
         if (pages.size() < 1) {
             return leaveSearchResultMethodAndReturnEmptyList();
         }
-
         List<SearchResultPage> searchResultPageList = new ArrayList<>();
         String site, siteName, uri, title, snippet;
         float relevance;
@@ -59,9 +58,8 @@ public class QueryHandler {
             SearchResultPage searchResultPage = new SearchResultPage(site, siteName, uri, title, snippet, relevance);
             searchResultPageList.add(searchResultPage);
         }
-        searchResultPageList
-                .sort(Comparator.comparing(SearchResultPage::getRelevance).reversed()
-                        .thenComparing(SearchResultPage::getTitle));
+        searchResultPageList.sort(Comparator.comparing(SearchResultPage::getRelevance).reversed()
+                .thenComparing(SearchResultPage::getTitle));
         convertAbsoluteRelevanceToRelative(searchResultPageList);
         return searchResultPageList;
     }

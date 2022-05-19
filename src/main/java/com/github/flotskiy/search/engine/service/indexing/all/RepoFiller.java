@@ -22,20 +22,16 @@ public class RepoFiller {
 
     public void fillInFields() {
         repositoriesHolder.truncateFields();
-        repositoriesHolder.getFieldRepository().save(new Field("title", "title", 1.0f));
-        repositoriesHolder.getFieldRepository().save(new Field("body", "body", 0.8f));
-    }
-
-    public void fillInSites() {
-        repositoriesHolder.getSiteRepository().saveAll(collectionsHolder.getSiteList());
+        repositoriesHolder.saveNewField(new Field("title", "title", 1.0f));
+        repositoriesHolder.saveNewField(new Field("body", "body", 0.8f));
     }
 
     public void saveSite(Site site) {
-        repositoriesHolder.getSiteRepository().save(site);
+        repositoriesHolder.saveNewSite(site);
     }
 
     public void fillInPages() {
-        repositoriesHolder.getPageRepository().saveAll(collectionsHolder.getPageList());
+        repositoriesHolder.saveAllPages(collectionsHolder.getPageList());
         collectionsHolder.getPageList().clear();
     }
 
@@ -45,13 +41,13 @@ public class RepoFiller {
             Lemma lemma = new Lemma(pair.getLemma(), collectionsHolder.getSiteLemmaMap().get(pair), pair.getSite());
             collectionsHolder.getLemmaList().add(lemma);
         }
-        repositoriesHolder.getLemmaRepository().saveAll(collectionsHolder.getLemmaList());
+        repositoriesHolder.saveAllLemmas(collectionsHolder.getLemmaList());
         collectionsHolder.getSiteLemmaMap().clear();
         collectionsHolder.getLemmaList().clear();
     }
 
     public void fillInSearchIndex() {
-        Iterable<Lemma> lemmaIterable = repositoriesHolder.getLemmaRepository().findAll();
+        Iterable<Lemma> lemmaIterable = repositoriesHolder.findAllLemmas();
         Map<String, Lemma> lemmasMapFromDB = new HashMap<>();
         for (Lemma lemma : lemmaIterable) {
             lemmasMapFromDB.put(lemma.getLemma(), lemma);
@@ -64,12 +60,12 @@ public class RepoFiller {
         }
 
         System.out.println("indexList.size() - " + indexList.size());
-        repositoriesHolder.getIndexRepository().saveAll(indexList);
+        repositoriesHolder.saveAllIndexes(indexList);
         collectionsHolder.getTempIndexList().clear();
     }
 
     public void deletePreviouslyIndexedSiteByName(String siteName, int siteId) {
-        repositoriesHolder.getSiteRepository().deletePreviouslyIndexedSiteByName(siteName, siteId);
+        repositoriesHolder.deletePreviouslyIndexedSiteByName(siteName, siteId);
     }
 
     public void setSiteStatus(Site site, Status status) {

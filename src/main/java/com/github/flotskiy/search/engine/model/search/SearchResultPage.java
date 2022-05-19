@@ -1,4 +1,4 @@
-package com.github.flotskiy.search.engine.model;
+package com.github.flotskiy.search.engine.model.search;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,7 +1,7 @@
 package com.github.flotskiy.search.engine.service.search;
 
 import com.github.flotskiy.search.engine.dataholders.RepositoriesHolder;
-import com.github.flotskiy.search.engine.model.SearchResultPage;
+import com.github.flotskiy.search.engine.model.search.SearchResultPage;
 import com.github.flotskiy.search.engine.model.Site;
 import com.github.flotskiy.search.engine.model.search.*;
 import com.github.flotskiy.search.engine.util.StringHelper;

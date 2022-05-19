@@ -37,10 +37,7 @@ public class SearchController {
         }
         if (SearchService.isQueryExists(query)) {
             QueryHolder queryHolder = new QueryHolder(query, site, offset, limit);
-            SearchResultTrue searchResultTrue = SearchService.getSearchResult(
-                    repositoriesHolder,
-                    queryHolder
-            );
+            SearchResultTrue searchResultTrue = SearchService.getSearchResult(repositoriesHolder, queryHolder);
             return ResponseEntity.ok().body(searchResultTrue);
         }
         searchResultFalse.put("error", "Задан пустой поисковый запрос");

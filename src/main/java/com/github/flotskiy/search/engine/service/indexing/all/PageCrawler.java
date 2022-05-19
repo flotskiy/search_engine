@@ -40,18 +40,15 @@ public class PageCrawler extends RecursiveAction {
         try {
             Thread.sleep(500);
             Connection connection = JsoupHelper.getConnection(pagePath);
-
             URL url = new URL(pagePath);
             String homePage = url.getProtocol() + "://" + url.getHost();
 
             Connection.Response response = connection.execute();
             int httpStatusCode = response.statusCode();
             String html = "";
-
             if (httpStatusCode == 200) {
                 Document document = connection.get();
                 html = document.outerHtml();
-
                 Elements anchors = document.select("body").select("a");
                 for (Element anchor : anchors) {
                     String href = anchor.absUrl("href");
@@ -63,14 +60,12 @@ public class PageCrawler extends RecursiveAction {
                     }
                 }
             }
-
             String pathToSave = StringHelper.cutProtocolAndHost(pagePath, homePage);
             Page page = new Page(pathToSave, httpStatusCode, html, site);
             collFiller.addPageToPagesList(page);
             if (httpStatusCode == 200) {
                 collFiller.fillInLemmasMapAndTempIndexList(html, page, site);
             }
-
         } catch (InterruptedException ie) {
             System.out.println("InterruptedException in PageCrawler - Thread: " + Thread.currentThread().getName());
         } catch (ConnectException ce) {
@@ -80,7 +75,6 @@ public class PageCrawler extends RecursiveAction {
             System.out.println("IOException in PageCrawler");
             throw ioe;
         }
-
         for (PageCrawler pageCrawler : forkJoinPoolPagesList) {
             pageCrawler.join();
         }
