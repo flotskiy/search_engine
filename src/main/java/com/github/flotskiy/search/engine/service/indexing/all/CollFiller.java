@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,11 +26,18 @@ public class CollFiller {
         this.repositoriesHolder = repositoriesHolder;
     }
 
-    public void fillInSelectorsAndWeigh() {
+    public void setSelectorsAndWeigh() {
+        ConcurrentHashMap<String, Float> tempSelectorsAndWeight = getSelectorsAndWeight();
+        collectionsHolder.getSelectorsAndWeight().putAll(tempSelectorsAndWeight);
+    }
+
+    private ConcurrentHashMap<String, Float> getSelectorsAndWeight() {
+        ConcurrentHashMap<String, Float> selectorsAndWeight = new ConcurrentHashMap<>();
         Iterable<Field> fieldIterable = repositoriesHolder.findAllFields();
         for (Field field : fieldIterable) {
-            collectionsHolder.getSelectorsAndWeight().put(field.getSelector(), field.getWeight());
+            selectorsAndWeight.put(field.getSelector(), field.getWeight());
         }
+        return selectorsAndWeight;
     }
 
     public void fillInSiteList(Map<String, String> SOURCES_MAP) {
@@ -49,28 +57,62 @@ public class CollFiller {
     }
 
     public void fillInLemmasMapAndTempIndexList(String html, Page page, Site site) {
-        Document htmlDocument = JsoupHelper.getDocument(html);
-        String title = htmlDocument.title();
-        System.out.println(title);
-        Map<String, Integer> titleLemmasCount = Lemmatizer.getLemmasCountMap(title);
-
-        String bodyText = htmlDocument.body().text();
-        Map<String, Integer> bodyLemmasCount = Lemmatizer.getLemmasCountMap(bodyText);
-
-        Map<String, Integer> uniqueLemmasInTitleAndBody = Stream
-                .concat(titleLemmasCount.entrySet().stream(), bodyLemmasCount.entrySet().stream())
-                .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.summingInt(Map.Entry::getValue)));
-
-        for (String lemma : uniqueLemmasInTitleAndBody.keySet()) {
+        List<Map<String, Integer>> mapList = getUniqueLemmasListOfMaps(html);
+        for (String lemma : mapList.get(2).keySet()) {
             SiteLemmaPair siteLemmaPair = new SiteLemmaPair(lemma, site);
             collectionsHolder.getSiteLemmaMap()
                     .put(
                             siteLemmaPair,
                             collectionsHolder.getSiteLemmaMap().getOrDefault(siteLemmaPair, 0) + 1
                     );
-            float lemmaRank = calculateLemmaRank(lemma, titleLemmasCount, bodyLemmasCount);
+            float lemmaRank = calculateLemmaRank(
+                    lemma, mapList.get(0), mapList.get(1), collectionsHolder.getSelectorsAndWeight()
+            );
             collectionsHolder.getTempIndexList().add(new TempIndex(page, lemma, lemmaRank));
         }
+    }
+
+    public void fillInLemmasAndIndexForSinglePageCrawler(String html, Page page, Site site) {
+        List<Map<String, Integer>> mapList = getUniqueLemmasListOfMaps(html);
+        Iterable<Lemma> lemmaIterableFromDb = repositoriesHolder.getAllLemmasFromSite(site.getId());
+        Map<String, Lemma> tempMapWithLemmas = new HashMap<>();
+        for (Lemma lemma : lemmaIterableFromDb) {
+            for (String lemmaString : mapList.get(2).keySet()) {
+                if (lemma.getLemma().equals(lemmaString)) {
+                    lemma.setFrequency(lemma.getFrequency() + 1);
+                    tempMapWithLemmas.put(lemma.getLemma(), lemma);
+                }
+            }
+        }
+        repositoriesHolder.saveAllLemmas(tempMapWithLemmas.values());
+
+        ConcurrentHashMap<String, Float> selectorsAndWeight = getSelectorsAndWeight();
+        List<Index> tempIndexList = new ArrayList<>();
+        for (String lemmaString : mapList.get(2).keySet()) {
+            float lemmaRank = calculateLemmaRank(lemmaString, mapList.get(0), mapList.get(1), selectorsAndWeight);
+            Lemma lemma = tempMapWithLemmas.get(lemmaString);
+            tempIndexList.add(new Index(page, lemma, lemmaRank));
+        }
+        repositoriesHolder.saveAllIndexes(tempIndexList);
+    }
+
+    private List<Map<String, Integer>> getUniqueLemmasListOfMaps(String html) {
+        Document htmlDocument = JsoupHelper.getDocument(html);
+        String title = htmlDocument.title();
+        System.out.println(title);
+        String bodyText = htmlDocument.body().text();
+
+        Map<String, Integer> titleLemmasCount = Lemmatizer.getLemmasCountMap(title); // 0
+        Map<String, Integer> bodyLemmasCount = Lemmatizer.getLemmasCountMap(bodyText); // 1
+        Map<String, Integer> uniqueLemmasInTitleAndBody = Stream // 2
+                .concat(titleLemmasCount.entrySet().stream(), bodyLemmasCount.entrySet().stream())
+                .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.summingInt(Map.Entry::getValue)));
+
+        List<Map<String, Integer>> mapList = new ArrayList<>();
+        mapList.add(titleLemmasCount);
+        mapList.add(bodyLemmasCount);
+        mapList.add(uniqueLemmasInTitleAndBody);
+        return mapList;
     }
 
     public boolean isPageAdded(String pagePath) {
@@ -86,13 +128,14 @@ public class CollFiller {
         collectionsHolder.getPageList().add(page);
     }
 
-    public float calculateLemmaRank(
-            String lemma, Map<String, Integer> titleLemmasCount, Map<String, Integer> bodyLemmasCount
-            ) {
-        return titleLemmasCount.getOrDefault(lemma, 0) *
-                collectionsHolder.getSelectorsAndWeight().get("title") +
-                bodyLemmasCount.getOrDefault(lemma, 0) *
-                collectionsHolder.getSelectorsAndWeight().get("body");
+    private float calculateLemmaRank(
+            String lemma,
+            Map<String, Integer> titleLemmasCount,
+            Map<String, Integer> bodyLemmasCount,
+            Map<String, Float> selectorsAndWeight
+    ) {
+        return titleLemmasCount.getOrDefault(lemma, 0) * selectorsAndWeight.get("title") +
+                bodyLemmasCount.getOrDefault(lemma, 0) * selectorsAndWeight.get("body");
     }
 
     public void clearCollections() {

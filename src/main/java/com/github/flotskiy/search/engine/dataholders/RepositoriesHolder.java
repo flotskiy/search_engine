@@ -6,6 +6,7 @@ import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -53,6 +54,18 @@ public class RepositoriesHolder {
         return pageRepository.getNumberOfPages();
     }
 
+    public void savePage(Page page) {
+        pageRepository.save(page);
+    }
+
+    public void deletePage(Page page) {
+        pageRepository.delete(page);
+    }
+
+    public Page getPageByPath(String pagePath) {
+        return pageRepository.getPageByPath(pagePath);
+    }
+
     public void truncateFields() {
         fieldRepository.truncateFields();
     }
@@ -65,11 +78,15 @@ public class RepositoriesHolder {
         fieldRepository.save(field);
     }
 
+    public Iterable<Lemma> getAllLemmasFromSite(int siteId) {
+        return lemmaRepository.getAllLemmasFromSite(siteId);
+    }
+
     public Iterable<Lemma> getLemmasWithQueryWords(Set<String> queryWords) {
         return lemmaRepository.getLemmasWithQueryWords(queryWords);
     }
 
-    public void saveAllLemmas(List<Lemma> lemmaList) {
+    public void saveAllLemmas(Collection<Lemma> lemmaList) {
         lemmaRepository.saveAll(lemmaList);
     }
 
@@ -83,6 +100,10 @@ public class RepositoriesHolder {
 
     public void saveAllIndexes(List<Index> indexList) {
         indexRepository.saveAll(indexList);
+    }
+
+    public float getTotalLemmasRankForPage(int pageId, List<Integer> lemmaIdList) {
+        return indexRepository.getTotalLemmasRankForPage(pageId, lemmaIdList);
     }
 
     public boolean isIndexing() {

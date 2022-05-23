@@ -93,14 +93,14 @@ public class StringHelper {
         }
     }
 
-    public static String getHomePage(String urlString) {
-        URL url = null;
-        try {
-            url = new URL(urlString);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
+    public static String getHomePage(String urlString) throws MalformedURLException {
+        URL url = new URL(urlString);
         return url.getProtocol() + "://" + url.getHost() + "/";
+    }
+
+    public static String getStartPage(String path) throws MalformedURLException {
+        URL url = new URL(path);
+        return url.getProtocol() + "://" + url.getHost();
     }
 
     public static boolean isStringExists(String s) {

@@ -21,7 +21,6 @@ public class ManagementController {
     private final RepoFiller repoFiller;
     private final CollFiller collFiller;
     private final SinglePageCrawler singlePageCrawler;
-
     private PageCrawlerStarter pageCrawlerStarter;
 
     @Autowired
@@ -29,19 +28,20 @@ public class ManagementController {
             CollectionsHolder collectionsHolder,
             RepoFiller repoFiller,
             CollFiller collFiller,
+            PageCrawlerStarter pageCrawlerStarter,
             SinglePageCrawler singlePageCrawler
     ) {
         this.collectionsHolder = collectionsHolder;
         this.repoFiller = repoFiller;
         this.collFiller = collFiller;
+        this.pageCrawlerStarter = pageCrawlerStarter;
         this.singlePageCrawler = singlePageCrawler;
     }
 
     @GetMapping("/startIndexing")
     public ResponseEntity<HashMap<String, Object>> startIndexing() {
-        pageCrawlerStarter = new PageCrawlerStarter(collectionsHolder, repoFiller, collFiller);
         HashMap<String, Object> response = new HashMap<>();
-        if (!pageCrawlerStarter.isStopped()) {
+        if (!pageCrawlerStarter.isStarted()) {
             new Thread(pageCrawlerStarter::startCrawling).start();
             response.put("result", true);
             return ResponseEntity.ok().body(response);

@@ -16,19 +16,14 @@ import java.util.stream.Collectors;
 
 public class QueryHandler {
 
-    public static List<SearchResultPage> getSearchResult(
-            RepositoriesHolder repositoriesHolder, QueryHolder queryHolder
-    ) {
-        Iterable<Site> siteIterable = repositoriesHolder.findAllSites();
-        List<Lemma> lemmasQueryList = getSortedLemmasQueryList(repositoriesHolder, queryHolder.getQuery());
+    public static List<SearchResultPage> getSearchResult(RepositoriesHolder repoHolder, QueryHolder queryHolder) {
+        Iterable<Site> siteIterable = repoHolder.findAllSites();
+        List<Lemma> lemmasQueryList = getSortedLemmasQueryList(repoHolder, queryHolder.getQuery());
         Set<Integer> removedSiteIdSet =
-                cleanLemmasQueryListFromFrequentLemmas(lemmasQueryList, repositoriesHolder, siteIterable);
+                cleanLemmasQueryListFromFrequentLemmas(lemmasQueryList, repoHolder, siteIterable);
         if (lemmasQueryList.size() < 1) {
             return leaveSearchResultMethodAndReturnEmptyList();
         }
-        List<Integer> lemmasIdList = lemmasQueryList.stream().map(Lemma::getId).collect(Collectors.toList());
-        List<String> lemmasStringList = lemmasQueryList.stream().map(Lemma::getLemma).collect(Collectors.toList());
-
         int siteId = -1;
         String siteUrl = queryHolder.getSite();
         for (Site site : siteIterable) {
@@ -36,27 +31,18 @@ public class QueryHandler {
                 siteId = site.getId();
             }
         }
-        Set<Page> pages = getPagesSet(lemmasQueryList, repositoriesHolder, siteId);
+        Set<Page> pages = getPagesSet(lemmasQueryList, repoHolder, siteId);
         pages.removeIf(page -> removedSiteIdSet.contains(page.getSiteId().getId()));
         if (pages.size() < 1) {
             return leaveSearchResultMethodAndReturnEmptyList();
         }
+        List<Integer> lemmasIdList = lemmasQueryList.stream().map(Lemma::getId).collect(Collectors.toList());
+        List<String> lemmasStringList = lemmasQueryList.stream().map(Lemma::getLemma).collect(Collectors.toList());
+        Map<List<Integer>, List<String>> map = new HashMap<>();
+        map.put(lemmasIdList, lemmasStringList);
         List<SearchResultPage> searchResultPageList = new ArrayList<>();
-        String site, siteName, uri, title, snippet;
-        float relevance;
-        Document document;
         for (Page page : pages) {
-            Site tempSite = page.getSiteId();
-            site = StringHelper.cutSlash(tempSite.getUrl());
-            siteName = tempSite.getName();
-            uri = page.getPath();
-            document = JsoupHelper.getDocument(page.getContent());
-            title = JsoupHelper.getTitle(document);
-            snippet = getSnippet(document, lemmasStringList);
-            relevance = repositoriesHolder.getIndexRepository().getTotalLemmasRankForPage(page.getId(), lemmasIdList);
-
-            SearchResultPage searchResultPage = new SearchResultPage(site, siteName, uri, title, snippet, relevance);
-            searchResultPageList.add(searchResultPage);
+            addNewSearchResult(searchResultPageList, page, repoHolder, map);
         }
         searchResultPageList.sort(Comparator.comparing(SearchResultPage::getRelevance).reversed()
                 .thenComparing(SearchResultPage::getTitle));
@@ -64,18 +50,43 @@ public class QueryHandler {
         return searchResultPageList;
     }
 
+    private static void addNewSearchResult(
+            List<SearchResultPage> listToAdd,
+            Page page,
+            RepositoriesHolder repoHolder,
+            Map<List<Integer>, List<String>> map
+    ) {
+        Site tempSite = page.getSiteId();
+        String site = StringHelper.cutSlash(tempSite.getUrl());
+        String siteName = tempSite.getName();
+        String uri = page.getPath();
+
+        Document document = JsoupHelper.getDocument(page.getContent());
+        String title = JsoupHelper.getTitle(document);
+
+        Map.Entry<List<Integer>, List<String>> entry = map.entrySet().stream().findFirst().get();
+        List<Integer> lemmasIdList = entry.getKey();
+        List<String> lemmasStringList = entry.getValue();
+
+        String snippet = getSnippet(document, lemmasStringList);
+        float relevance = repoHolder.getTotalLemmasRankForPage(page.getId(), lemmasIdList);
+
+        SearchResultPage searchResultPage = new SearchResultPage(site, siteName, uri, title, snippet, relevance);
+        listToAdd.add(searchResultPage);
+    }
+
     private static Set<Page> getPagesSet(
-            List<Lemma> lemmasQueryList, RepositoriesHolder repositoriesHolder, int siteIdFromQueryHolder
+            List<Lemma> lemmasQueryList, RepositoriesHolder repoHolder, int siteIdFromQueryHolder
     ) {
         String firstLemma = lemmasQueryList.get(0).getLemma();
         Set<Page> pagesResultSet = new HashSet<>();
         Set<Page> pagesTempSet = new HashSet<>();
-        Iterable<Page> pagesIterable = repositoriesHolder.getPagesByLemmaAndSiteId(firstLemma, siteIdFromQueryHolder);
+        Iterable<Page> pagesIterable = repoHolder.getPagesByLemmaAndSiteId(firstLemma, siteIdFromQueryHolder);
         pagesIterable.forEach(pagesResultSet::add);
 
         for (int i = 1; i < lemmasQueryList.size(); i++) {
             pagesTempSet.clear();
-            pagesIterable = repositoriesHolder.getPagesByLemmaAndSiteId(
+            pagesIterable = repoHolder.getPagesByLemmaAndSiteId(
                     lemmasQueryList.get(i).getLemma(), siteIdFromQueryHolder
             );
             pagesIterable.forEach(pagesTempSet::add);
@@ -84,12 +95,12 @@ public class QueryHandler {
         return pagesResultSet;
     }
 
-    private static List<Lemma> getSortedLemmasQueryList(RepositoriesHolder repositoriesHolder, String query) {
+    private static List<Lemma> getSortedLemmasQueryList(RepositoriesHolder repoHolder, String query) {
         if (query == null || query.isEmpty()) {
             return Collections.EMPTY_LIST;
         }
         Set<String> queryWordsSet = Lemmatizer.getLemmasCountMap(query).keySet();
-        Iterable<Lemma> queryLemmasIterable = repositoriesHolder.getLemmasWithQueryWords(queryWordsSet);
+        Iterable<Lemma> queryLemmasIterable = repoHolder.getLemmasWithQueryWords(queryWordsSet);
         List<Lemma> lemmasList = new ArrayList<>();
         queryLemmasIterable.forEach(lemmasList::add);
         lemmasList.sort((l1, l2) -> l1.getFrequency() < l2.getFrequency() ? -1 : 1);
@@ -131,12 +142,12 @@ public class QueryHandler {
     }
 
     private static Set<Integer> cleanLemmasQueryListFromFrequentLemmas(
-            List<Lemma> lemmaList, RepositoriesHolder rHolder, Iterable<Site> siteIterable
+            List<Lemma> lemmaList, RepositoriesHolder repoHolder, Iterable<Site> siteIterable
     ) {
         Map<Integer, Float> siteIdAnd95perCentOfAllPages = new HashMap<>();
         for (Site site : siteIterable) {
             int id = site.getId();
-            float occurrenceOf95perCent = rHolder.get95perCentPagesCount(id);
+            float occurrenceOf95perCent = repoHolder.get95perCentPagesCount(id);
             siteIdAnd95perCentOfAllPages.put(id, occurrenceOf95perCent);
         }
 

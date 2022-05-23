@@ -13,7 +13,6 @@ import org.jsoup.select.Elements;
 import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.net.ConnectException;
-import java.net.URL;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.CertificateExpiredException;
 import java.util.ArrayList;
@@ -40,9 +39,7 @@ public class PageCrawler extends RecursiveAction {
         try {
             Thread.sleep(500);
             Connection connection = JsoupHelper.getConnection(pagePath);
-            URL url = new URL(pagePath);
-            String homePage = url.getProtocol() + "://" + url.getHost();
-
+            String startPage = StringHelper.getStartPage(pagePath);
             Connection.Response response = connection.execute();
             int httpStatusCode = response.statusCode();
             String html = "";
@@ -52,7 +49,7 @@ public class PageCrawler extends RecursiveAction {
                 Elements anchors = document.select("body").select("a");
                 for (Element anchor : anchors) {
                     String href = anchor.absUrl("href");
-                    if (StringHelper.isHrefValid(homePage, href, collFiller)) {
+                    if (StringHelper.isHrefValid(startPage, href, collFiller)) {
                         System.out.println("Added to set: " + href);
                         PageCrawler pageCrawler = new PageCrawler(href, site, collFiller);
                         forkJoinPoolPagesList.add(pageCrawler);
@@ -60,7 +57,7 @@ public class PageCrawler extends RecursiveAction {
                     }
                 }
             }
-            String pathToSave = StringHelper.cutProtocolAndHost(pagePath, homePage);
+            String pathToSave = StringHelper.cutProtocolAndHost(pagePath, startPage);
             Page page = new Page(pathToSave, httpStatusCode, html, site);
             collFiller.addPageToPagesList(page);
             if (httpStatusCode == 200) {
