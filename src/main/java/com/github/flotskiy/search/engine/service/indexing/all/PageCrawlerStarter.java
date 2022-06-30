@@ -51,9 +51,9 @@ public class PageCrawlerStarter {
         }
         long start = System.currentTimeMillis();
         forkJoinPool = new ForkJoinPool();
+        repoFiller.fillInFields();
         collFiller.setSelectorsAndWeigh();
         collFiller.fillInSiteList(SOURCES_MAP);
-        repoFiller.fillInFields();
         for (Site site : new ArrayList<>(collectionsHolder.getSiteList())) {
             boolean isSuccessfully = processSite(site);
             if (!isSuccessfully) {
